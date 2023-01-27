@@ -16,4 +16,6 @@ while True:
     clock.tick(60)
     pygame.display.update()
 
+    worldmap = [0,1,2,3,4,45,5,65,6,7,78]
+
 
