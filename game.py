@@ -3,50 +3,43 @@ import pygame,sys
 #pygame setup
 pygame.init()
 
-display = pygame.display.set_mode((1000,1000))
+display = pygame.display.set_mode((1280,720))
 clock = pygame.time.Clock()
 pygame.display.set_caption("Top Down Shooter")
 
 #player class
 class Player(pygame.sprite.Sprite):
-    def __init__(self,x,y):
+    def __init__(self,pos):
         super().__init__()
-        self.image = pygame.Surface([50,45])
-        self.image.fill((10,10,120))
-        self.rect = self.image.get_rect()
-        self.rect.y = y
-        self.rect.x = x
-        self.change_x = 0
-        self.change_y = 0
-
+        self.image = pygame.image.load('tile000.png').convert_alpha()
+        self.rect = self.image.get_rect(center = pos)
+        self.direction = pygame.math.Vector2()
+        self.speed = 5
+    
+    
 #enemy class
 class Enemy(pygame.sprite.Sprite):
     def __init__(self,x,y,human):
         super().__init__()
         self.human = human
-        self.image = pygame.Surface([50,45])
-        self.image.fill((255,0,0))
-        self.rect = self.image.get_rect()
-        self.rect.y = y
-        self.rect.x = x
 
-        self.change_x = 0
-        self.change_y = 0
+#player input dictionary 
+player_input = {"left": False, "right": False, "up":False, "down":False}
 
-spritelist = pygame.sprite.Group()
-player = Player(50,50)
-spritelist.add(player)
-enemy1 = Enemy(500,50,player)
-spritelist.add(enemy1)
 
 #game loop
 while True:
+    display.fill((24,164,86))
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            pygame.quit()
+            pygame.QUIT
             sys.exit()
-    spritelist.update()
-    spritelist.draw(display)
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_LEFT:
+                player_input["left"] = True
+
+
+    pygame.draw.rect(display,(255,0,0),(100,100,32,32))
 
     clock.tick(60)
     pygame.display.update()
