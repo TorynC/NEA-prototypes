@@ -6,25 +6,37 @@ display = pygame.display.set_mode((1280,720))
 clock = pygame.time.Clock()
 pygame.display.set_caption("Top Down Shooter")
 
-#player class
-'''class Player(pygame.sprite.Sprite):
-    def __init__(self,pos):
-        super().__init__()
-        self.image = pygame.image.load('tile000.png').convert_alpha()
-        self.rect = self.image.get_rect(center = pos)
-        self.direction = pygame.math.Vector2()
-        self.speed = 5
+#Abstract class for player and enemy 
+class Entities:
+    def __init__(self,x,y,width,height,image):
+        self.x=x
+        self.y = y
+        self.width = width
+        self.image = image
+        self.velocity = [0,0]
+
+    def draw(self):
+        display.blit(pygame.transform.scale(self.image,(self.width,self.height)),(self.x,self.y))
     
+    def update(self):
+        self.x += self.velocity[0]
+        self.y += self.velocity[1]
+        self.draw()
+
+#player class
+class Player(Entities):
+    def __init__(self,image,x,y,width,height):
+        super().__init__()
+
 #enemy class
 class Enemy(pygame.sprite.Sprite):
     def __init__(self,x,y,human):
         super().__init__()
-        self.human = human'''
+        self.human = human
 
 #player input dictionary 
 player_input = {"left": False, "right": False, "up":False, "down":False}
 #other stuff with player 
-player_velocity = [0,0] #x and y 
 player_speed = 5
 playerx = 500
 playery= 500 
@@ -39,6 +51,9 @@ def check_inputs(key,value):
         player_input["right"] = value
     elif key == pygame.K_w:
         player_input["up"] = value
+
+#objects
+test_object = 
 
 #game loop
 while True:
