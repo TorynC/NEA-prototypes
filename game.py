@@ -32,6 +32,9 @@ class Object:
         self.y += self.velocity[1]
         self.draw()
 
+    def get_center(self):
+        return self.x + self.width/2, self.y + self.height/2
+
 #Abstract class for player and enemy 
 class Living(Object):
     def __init__(self,x,y,width,height,tileset,speed):
@@ -117,12 +120,13 @@ def load_tileset(file,width,height):
     return tileset
 
 #objects
-#test_player = Living(400,400,50,50,"assets/player-Sheet.png",5)
 player = Player(WINDOWSIZE[0]/2,WINDOWSIZE[1]/2,75,75,"assets/player-Sheet.png",5)
+target = Object(0,0,50,50,pygame.image.load("assets/cursor.png"))
+
+pygame.mouse.set_visible(False) #makes mouse cursor invicible 
 
 #game loop
 while True:
-    
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -131,12 +135,16 @@ while True:
             check_inputs(event.key,True)
         elif event.type == pygame.KEYUP:
             check_inputs(event.key,False)
+    
+    mousePos = pygame.mouse.get_pos() #tuple for position of cursor 
+    target.x = mousePos[0] - target.width/2
+    target.y = mousePos[1] - target.height/2
+
     #player movement
     player.velocity[0] = player_input["right"] - player_input["left"]
     player.velocity[1] = player_input["down"] - player_input["up"]
+
     DISPLAY.fill((24,164,86))
-    #player
-    
     for obj in objects:
         obj.update()
 
