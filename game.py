@@ -1,6 +1,10 @@
 import pygame,sys
 #pygame setup
 pygame.init()
+pygame.font.get_init()
+
+TEXT_FONT = pygame.font.Font("assets/font.otf", 32)
+
 WINDOWSIZE = (1280,720)
 
 DISPLAY = pygame.display.set_mode(WINDOWSIZE)
@@ -121,11 +125,15 @@ class Enemy(Living):
     def take_damage(self,damage):
         self.health -= damage
         if self.health <= 0:
+            global score
+            score += 10
             self.destroy()
 
     def destroy(self):
         objects.remove(self)
         enemies.remove(self)
+
+score = 0 
 
 is_game_over = False
 #player input dictionary 
@@ -189,6 +197,9 @@ def display_ui():
         img = pygame.transform.scale(img,(50,50))
         DISPLAY.blit(img,(i*50+WINDOWSIZE[0]/2-player.max_health*25,25))
 
+    score_text = TEXT_FONT.render(f'Score: {score}', True, (0,0,0))
+    DISPLAY.blit(score_text,(score_text.get_width()/2,25))
+
 def update_screen():
     clock.tick(60)
     pygame.display.update()
@@ -233,8 +244,8 @@ while True:
     for e in enemies:
         if check_collisions(player,e):
             player.health -= 1
-            '''e.destroy()
-            continue'''
+            e.destroy()
+            continue
         for b in bullets:
             if check_collisions(b,e):
                 e.take_damage(1)
