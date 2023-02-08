@@ -24,6 +24,7 @@ class Object:
         self.height = height
         self.image = image
         self.velocity = [0,0]
+        self.collider = [width,height]
 
         objects.append(self)
     def draw(self):
@@ -87,6 +88,7 @@ class Living(Object):
 class Player(Living):
     def __init__(self,x,y,width,height,tileset,speed):
         super().__init__(x,y,width,height,tileset,speed)
+        self.health = self.max_health = 3 #double assignment
 
 
 #enemy class
@@ -94,6 +96,7 @@ class Enemy(Living):
     def __init__(self,x,y,width,height,tileset,speed):
         super().__init__(x,y,width,height,tileset,speed)
         self.health = 3
+        self.collider = [width/2.5,height/1.5] 
         enemies.append(self)
 
     def update(self):
@@ -124,6 +127,7 @@ class Enemy(Living):
         objects.remove(self)
         enemies.remove(self)
 
+is_game_over = False
 #player input dictionary 
 player_input = {"left": False, "right": False, "up":False, "down":False}
 
@@ -169,6 +173,26 @@ def shoot():
 
     bullets.append(bullet)
 
+def check_collisions(obj1,obj2):
+    x1,y1 = obj1.get_center()
+    x2,y2 = obj2.get_center()
+    w1,h1 = obj1.collider[0]/2, obj1.collider[1]/2
+    w2,h2 = obj2.collider[0]/2, obj2.collider[1]/2
+    if x1 + w1 > x2 - w2 and x1 -w1 < x2 + w2: #formula for detecting collision
+        return y1 + h1 > y2 - h2 and y1 - h1 < y2 + h2 
+    else:
+        return False
+
+def display_ui():
+    for i in range(player.max_health):
+        img = pygame.image.load("assets/heart_empty.png" if i >= player.health else "assets/heart.png")
+        img = pygame.transform.scale(img,(50,50))
+        DISPLAY.blit(img,(i*50+WINDOWSIZE[0]/2-player.max_health*25,25))
+
+def update_screen():
+    clock.tick(60)
+    pygame.display.update()
+
 #game loop
 while True:
     for event in pygame.event.get():
@@ -191,9 +215,29 @@ while True:
     player.velocity[1] = player_input["down"] - player_input["up"]
 
     DISPLAY.fill((24,164,86))
+    
+    display_ui()
+
+    if is_game_over:
+        pygame.mouse.set_visible(True)
+        update_screen()
+        continue
+
+    if player.health <= 0:
+        if not is_game_over:
+            is_game_over = True
 
     for obj in objects:
         obj.update()
 
-    clock.tick(60)
-    pygame.display.update()
+    for e in enemies:
+        if check_collisions(player,e):
+            player.health -= 1
+            '''e.destroy()
+            continue'''
+        for b in bullets:
+            if check_collisions(b,e):
+                e.take_damage(1)
+                bullets.remove(b)
+                objects.remove(b)
+    update_screen()
