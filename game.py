@@ -90,10 +90,11 @@ class Living(Object):
 
 #player class
 class Player(Living):
-    def __init__(self,x,y,width,height,tileset,speed):
+    def __init__(self,x,y,width,height,tileset,speed,group):
         super().__init__(x,y,width,height,tileset,speed)
         self.health = self.max_health = 3 #double assignment
-
+        self.rect = self.tileset[0].get_rect(center = (x,y))
+        self.group = group
 
 #enemy class
 class Enemy(Living):
@@ -133,9 +134,41 @@ class Enemy(Living):
         objects.remove(self)
         enemies.remove(self)
 
+class CameraGroup(pygame.sprite.Group):
+    def __init__(self):
+        super().__init__()
+        self.display_surface = pygame.display.get_surface()
+        #camera offset
+        self.offset = pygame.math.Vector2()
+        self.half_w = self.display_surface.get_size()[0]//2
+        self.half_h = self.display_surface.get_size()[1]//2
+
+        #ground
+        self.ground_surf = pygame.image.load('assets/background.png').convert_alpha()
+        self.ground_rect = self.ground_surf.get_rect(topleft = (0,0))
+
+    def center_target_camera(self,target):
+        self.offset.x = target.rect.centerx - self.half_w
+        self.offset.y = target.rect.centery - self.half_h
+    
+    def custom_draw(self,player):
+        self.center_target_camera(player)
+        #ground
+        ground_offset = self.ground_rect.topleft - self.offset
+        self.display_surface.blit(self.ground_surf,ground_offset)
+
+        #active elements
+        for sprite in self.sprites():
+            offset_pos = sprite.rect.topleft + self.offset
+            self.display_surface.blit(sprite.image,offset_pos)
+
 score = 0 
 
 is_game_over = False
+
+#setup for camera
+camera_group = CameraGroup()
+
 #player input dictionary 
 player_input = {"left": False, "right": False, "up":False, "down":False}
 
@@ -163,9 +196,9 @@ def load_tileset(file,width,height):
     return tileset
 
 #objects
-player = Player(WINDOWSIZE[0]/2,WINDOWSIZE[1]/2,75,75,"assets/player-Sheet.png",5)
+player = Player(WINDOWSIZE[0]/2,WINDOWSIZE[1]/2,75,75,"assets/player-Sheet.png",5,camera_group)
 target = Object(0,0,50,50,pygame.image.load("assets/cursor.png"))
-enemy = Enemy(200,200,75,75,"assets/enemy-Sheet.png",2)
+enemy = Enemy(200,200,75,75,"assets/enemy-Sheet2.png",2)
 
 pygame.mouse.set_visible(False) #makes mouse cursor invicible 
 
@@ -225,9 +258,12 @@ while True:
     player.velocity[0] = player_input["right"] - player_input["left"]
     player.velocity[1] = player_input["down"] - player_input["up"]
 
-    DISPLAY.fill((24,164,86))
+    DISPLAY.fill('#71ddee')
     
     display_ui()
+
+    camera_group.update()
+    camera_group.custom_draw(player)
 
     if is_game_over:
         pygame.mouse.set_visible(True)
