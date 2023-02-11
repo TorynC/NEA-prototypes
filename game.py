@@ -151,10 +151,10 @@ class Enemy():
     def __init__(self,x,y,width,height,tileset,speed):
         super().__init__(x,y,width,height,tileset,speed)
         self.health = 3
-        self.collider = [width/2.5,height/1.5] 
+        #self.collider = [width/2.5,height/1.5] 
         enemies.append(self)
 
-    def update(self):
+    '''def update(self):
         player_center = player.get_center()
         enemy_center = self.get_center()
 
@@ -163,9 +163,9 @@ class Enemy():
         magnitude = (self.velocity[0]**2 + self.velocity[1]**2) ** 0.5
         self.velocity =  [self.velocity[0]/magnitude*self.speed, self.velocity[1]/magnitude*self.speed]
 
-        super().update()
+        super().update()'''
 
-    def change_direction(self):
+    '''def change_direction(self):
         super().change_direction()
 
         if self.velocity[1] > self.velocity[0] > 0:
@@ -182,7 +182,7 @@ class Enemy():
 
     def destroy(self):
         objects.remove(self)
-        enemies.remove(self)
+        enemies.remove(self)'''
 
 score = 0 
 
@@ -216,8 +216,8 @@ def load_tileset(file,width,height):
 #objects
 camera_group = CameraGroup()
 player = Player((600,400),camera_group)
-'''target = Object(0,0,50,50,pygame.image.load("assets/cursor.png"))
-enemy = Enemy(200,200,75,75,"assets/enemy-Sheet.png",2)'''
+'''target = Object(0,0,50,50,pygame.image.load("assets/cursor.png"))'''
+'''enemy = Enemy(200,200,75,75,"assets/enemy-Sheet.png",2)'''
 
 
 #pygame.mouse.set_visible(False) #makes mouse cursor invicible 
@@ -234,7 +234,7 @@ enemy = Enemy(200,200,75,75,"assets/enemy-Sheet.png",2)'''
 
     bullets.append(bullet)'''
 
-def check_collisions(obj1,obj2):
+'''def check_collisions(obj1,obj2):
     x1,y1 = obj1.get_center()
     x2,y2 = obj2.get_center()
     w1,h1 = obj1.collider[0]/2, obj1.collider[1]/2
@@ -242,7 +242,7 @@ def check_collisions(obj1,obj2):
     if x1 + w1 > x2 - w2 and x1 -w1 < x2 + w2: #formula for detecting collision
         return y1 + h1 > y2 - h2 and y1 - h1 < y2 + h2 
     else:
-        return False
+        return False'''
 
 def display_ui():
     for i in range(player.max_health):
@@ -297,7 +297,7 @@ while True:
     for obj in objects:
         obj.update()
 
-    for e in enemies:
+    '''for e in enemies:
         if check_collisions(player,e):
             player.health -= 1
             e.destroy()
@@ -306,5 +306,5 @@ while True:
             if check_collisions(b,e):
                 e.take_damage(1)
                 bullets.remove(b)
-                objects.remove(b)
+                objects.remove(b)'''
     update_screen()
