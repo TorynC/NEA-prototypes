@@ -48,7 +48,7 @@ class CameraGroup(pygame.sprite.Group):
 
 #Class for projectiles and other objects 
 class Object:
-    def __init__ (self,x,y,width,height,image):
+    def __init__(self,x,y,width,height,image):
         self.x = x
         self.y = y
         self.width = width
@@ -120,52 +120,101 @@ class Player(pygame.sprite.Sprite):
     def __init__(self,pos,group):
         super().__init__(group)
         self.health = self.max_health = 3 #double assignment
-        self.image = pygame.transform.scale(pygame.image.load("assets/player sprite/tile000.png").convert_alpha(),(64,64))
+        self.image = pygame.transform.scale(pygame.image.load("assets/test.png").convert_alpha(),(64,64))
         self.rect = self.image.get_rect(center=pos)
-        self.speed = 4
+        self.hitbox = self.rect.inflate(0,-26)
+        self.speed = 5
         self.direction = pygame.math.Vector2()
+
+        self.frame_count = 0 
+        self.import_player_assets()
+        self.status = 'idle'
+        self.animation_speed = 0.15
+
+    def import_player_assets(self):
+        #dictionary of animations 
+        self.animations = {"up":[pygame.transform.scale(pygame.image.load("assets/player sprite/tile006.png").convert_alpha(),(64,64)),pygame.transform.scale(pygame.image.load("assets/player sprite/tile007.png").convert_alpha(),(64,64)),
+pygame.transform.scale(pygame.image.load("assets/player sprite/tile008.png").convert_alpha(),(64,64))],
+        "down":[pygame.transform.scale(pygame.image.load("assets/player sprite/tile001.png").convert_alpha(),(64,64)),
+pygame.transform.scale(pygame.image.load("assets/player sprite/tile002.png").convert_alpha(),(64,64))],
+        "right":[pygame.transform.scale(pygame.image.load("assets/player sprite/tile003.png").convert_alpha(),(64,64)),pygame.transform.scale(pygame.image.load("assets/player sprite/tile004.png").convert_alpha(),(64,64)),
+pygame.transform.scale(pygame.image.load("assets/player sprite/tile005.png").convert_alpha(),(64,64))],
+        "left":[pygame.transform.scale(pygame.transform.flip(pygame.image.load("assets/player sprite/tile003.png").convert_alpha(),True,False),(64,64)),pygame.transform.scale(pygame.transform.flip(pygame.image.load("assets/player sprite/tile004.png").convert_alpha(),True,False),(64,64)),
+pygame.transform.scale(pygame.transform.flip(pygame.image.load("assets/player sprite/tile005.png").convert_alpha(),True,False),(64,64))],
+        "idle":[pygame.transform.scale(pygame.image.load("assets/player sprite/tile000.png").convert_alpha(),(64,64))]}
 
     def input(self):
         keys = pygame.key.get_pressed()
 
+        #movement input 
         if keys[pygame.K_w]:
             self.direction.y = -1
+            self.status = 'up'
         elif keys[pygame.K_s]:
             self.direction.y = 1
+            self.status = 'down'
         else:
             self.direction.y = 0
 
         if keys[pygame.K_d]:
             self.direction.x = 1
+            self.status = 'right'
         elif keys[pygame.K_a]:
             self.direction.x = -1
+            self.status = 'left'
         else:
             self.direction.x = 0
 
+    def move(self,speed):
+        if self.direction.magnitude()!=0:
+            self.direction = self.direction.normalize()
+        self.rect.x += self.direction.x *speed
+        self.rect.y += self.direction.y * speed 
+
+    def get_status(self):
+        #idle_status
+        if self.direction.x == 0 and self.direction.y == 0:
+            if self.status != 'idle':
+                self.status = 'idle'
+
+    def animate(self):
+        animation = self.animations[self.status]
+        #loop over frame counter
+        self.frame_count += self.animation_speed
+        if self.frame_count >= len(animation):
+            self.frame_count = 0
+        #set the image
+        self.image = animation[int(self.frame_count)]
+        self.rect = self.image.get_rect(center =self.hitbox.center )
+
     def update(self):
         self.input()
-        self.rect.center += self.direction * self.speed
+        self.move(self.speed)
+        self.get_status()
+        self.animate()
+        
 
 #enemy class
-class Enemy():
+class Enemy(Living):
     def __init__(self,x,y,width,height,tileset,speed):
         super().__init__(x,y,width,height,tileset,speed)
         self.health = 3
         #self.collider = [width/2.5,height/1.5] 
         enemies.append(self)
 
-    '''def update(self):
-        player_center = player.get_center()
+    def update(self):
+        playerx = player.rect.x
+        playery = player.rect.y
         enemy_center = self.get_center()
 
-        self.velocity = [player_center[0]-enemy_center[0],player_center[1]-enemy_center[1]]
+        self.velocity = [playerx-enemy_center[0],playery-enemy_center[1]]
         
         magnitude = (self.velocity[0]**2 + self.velocity[1]**2) ** 0.5
         self.velocity =  [self.velocity[0]/magnitude*self.speed, self.velocity[1]/magnitude*self.speed]
 
-        super().update()'''
+        super().update()
 
-    '''def change_direction(self):
+    def change_direction(self):
         super().change_direction()
 
         if self.velocity[1] > self.velocity[0] > 0:
@@ -182,24 +231,13 @@ class Enemy():
 
     def destroy(self):
         objects.remove(self)
-        enemies.remove(self)'''
+        enemies.remove(self)
 
 score = 0 
 
 is_game_over = False
 #player input dictionary 
-player_input = {"left": False, "right": False, "up":False, "down":False}
 
-#function for checking inputs
-def check_inputs(key,value):
-    if key == pygame.K_a:
-        player_input["left"] = value
-    elif key == pygame.K_s:
-        player_input["down"] = value
-    elif key == pygame.K_d:
-        player_input["right"] = value
-    elif key == pygame.K_w:
-        player_input["up"] = value
 
 def load_tileset(file,width,height):
     image = pygame.image.load(file).convert_alpha()
@@ -216,33 +254,12 @@ def load_tileset(file,width,height):
 #objects
 camera_group = CameraGroup()
 player = Player((600,400),camera_group)
-'''target = Object(0,0,50,50,pygame.image.load("assets/cursor.png"))'''
-'''enemy = Enemy(200,200,75,75,"assets/enemy-Sheet.png",2)'''
+#target = Object(0,0,50,50,pygame.image.load("assets/cursor.png"))
+#enemy = Enemy(200,200,75,75,"assets/enemy-Sheet.png",2)
 
 
 #pygame.mouse.set_visible(False) #makes mouse cursor invicible 
 
-'''def shoot():
-    player_center = player.get_center()
-    bullet = Object(player_center[0], player_center[1],16,16,pygame.image.load("assets/bullet.png"))
-    target_center = target.get_center()
-    bullet.velocity = [target_center[0]-player_center[0],target_center[1]-player_center[1]]
-
-    magnitude = (bullet.velocity[0]**2 + bullet.velocity[1]**2) ** 0.5
-
-    bullet.velocity =  [bullet.velocity[0]/magnitude*10, bullet.velocity[1]/magnitude*10]
-
-    bullets.append(bullet)'''
-
-'''def check_collisions(obj1,obj2):
-    x1,y1 = obj1.get_center()
-    x2,y2 = obj2.get_center()
-    w1,h1 = obj1.collider[0]/2, obj1.collider[1]/2
-    w2,h2 = obj2.collider[0]/2, obj2.collider[1]/2
-    if x1 + w1 > x2 - w2 and x1 -w1 < x2 + w2: #formula for detecting collision
-        return y1 + h1 > y2 - h2 and y1 - h1 < y2 + h2 
-    else:
-        return False'''
 
 def display_ui():
     for i in range(player.max_health):
@@ -263,12 +280,6 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
-        elif event.type == pygame.KEYDOWN:
-            check_inputs(event.key,True)
-        elif event.type == pygame.KEYUP:
-            check_inputs(event.key,False)
-        '''elif event.type == pygame.MOUSEBUTTONDOWN:
-            shoot()'''
     
     '''mousePos = pygame.mouse.get_pos() #tuple for position of cursor 
     target.x = mousePos[0] - target.width/2
