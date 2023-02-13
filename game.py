@@ -10,15 +10,15 @@ WINDOWSIZE = (1280,720)
 DISPLAY = pygame.display.set_mode(WINDOWSIZE)
 clock = pygame.time.Clock()
 pygame.display.set_caption("Top Down Shooter")
-
-
+MAPBOUND_X = 1800
+MAPBOUND_Y = 1200
 
 score = 0 
 class CameraGroup(pygame.sprite.Group):
     def __init__(self):
         super().__init__()
         self.display_surface= pygame.display.get_surface()
-        self.ground_surf = pygame.image.load('assets/background.png').convert_alpha()
+        self.ground_surf = pygame.transform.scale(pygame.image.load('assets/map1.png').convert(),(MAPBOUND_X,MAPBOUND_Y))
         self.ground_rect = self.ground_surf.get_rect(topleft = (0,0))
 
         self.offset = pygame.math.Vector2()
@@ -43,9 +43,8 @@ class Player(pygame.sprite.Sprite):
     def __init__(self,pos,group):
         super().__init__(group)
         self.health = self.max_health = 3 #double assignment
-        self.image = pygame.transform.scale(pygame.image.load("assets/test.png").convert_alpha(),(64,64))
-        self.rect = self.image.get_rect(topleft = pos)
-        self.hitbox = self.rect.inflate(0,-26)
+        self.image = pygame.transform.scale(pygame.image.load("assets/test.png").convert_alpha(),(40,40))
+        self.rect = self.image.get_rect(center = pos)
         self.speed = 5
         self.direction = pygame.math.Vector2()
 
@@ -56,15 +55,15 @@ class Player(pygame.sprite.Sprite):
 
     def import_player_assets(self):
         #dictionary of animations 
-        self.animations = {"up":[pygame.transform.scale(pygame.image.load("assets/player sprite/tile006.png").convert_alpha(),(64,64)),pygame.transform.scale(pygame.image.load("assets/player sprite/tile007.png").convert_alpha(),(64,64)),
-pygame.transform.scale(pygame.image.load("assets/player sprite/tile008.png").convert_alpha(),(64,64))],
-        "down":[pygame.transform.scale(pygame.image.load("assets/player sprite/tile001.png").convert_alpha(),(64,64)),
-pygame.transform.scale(pygame.image.load("assets/player sprite/tile002.png").convert_alpha(),(64,64))],
-        "right":[pygame.transform.scale(pygame.image.load("assets/player sprite/tile003.png").convert_alpha(),(64,64)),pygame.transform.scale(pygame.image.load("assets/player sprite/tile004.png").convert_alpha(),(64,64)),
-pygame.transform.scale(pygame.image.load("assets/player sprite/tile005.png").convert_alpha(),(64,64))],
-        "left":[pygame.transform.scale(pygame.transform.flip(pygame.image.load("assets/player sprite/tile003.png").convert_alpha(),True,False),(64,64)),pygame.transform.scale(pygame.transform.flip(pygame.image.load("assets/player sprite/tile004.png").convert_alpha(),True,False),(64,64)),
-pygame.transform.scale(pygame.transform.flip(pygame.image.load("assets/player sprite/tile005.png").convert_alpha(),True,False),(64,64))],
-        "idle":[pygame.transform.scale(pygame.image.load("assets/player sprite/tile000.png").convert_alpha(),(64,64))]}
+        self.animations = {"up":[pygame.transform.scale(pygame.image.load("assets/player sprite/tile006.png").convert_alpha(),(40,40)),pygame.transform.scale(pygame.image.load("assets/player sprite/tile007.png").convert_alpha(),(40,40)),
+pygame.transform.scale(pygame.image.load("assets/player sprite/tile008.png").convert_alpha(),(40,40))],
+        "down":[pygame.transform.scale(pygame.image.load("assets/player sprite/tile001.png").convert_alpha(),(40,40)),
+pygame.transform.scale(pygame.image.load("assets/player sprite/tile002.png").convert_alpha(),(40,40))],
+        "right":[pygame.transform.scale(pygame.image.load("assets/player sprite/tile003.png").convert_alpha(),(40,40)),pygame.transform.scale(pygame.image.load("assets/player sprite/tile004.png").convert_alpha(),(40,40)),
+pygame.transform.scale(pygame.image.load("assets/player sprite/tile005.png").convert_alpha(),(40,40))],
+        "left":[pygame.transform.scale(pygame.transform.flip(pygame.image.load("assets/player sprite/tile003.png").convert_alpha(),True,False),(40,40)),pygame.transform.scale(pygame.transform.flip(pygame.image.load("assets/player sprite/tile004.png").convert_alpha(),True,False),(40,40)),
+pygame.transform.scale(pygame.transform.flip(pygame.image.load("assets/player sprite/tile005.png").convert_alpha(),True,False),(40,40))],
+        "idle":[pygame.transform.scale(pygame.image.load("assets/player sprite/tile000.png").convert_alpha(),(40,40))]}
 
     def input(self):
         keys = pygame.key.get_pressed()
@@ -92,9 +91,17 @@ pygame.transform.scale(pygame.transform.flip(pygame.image.load("assets/player sp
         if self.direction.magnitude()!=0:
             self.direction = self.direction.normalize()
 
-        self.hitbox.x += self.direction.x * speed
-        self.hitbox.y += self.direction.y * speed
-        self.rect.center = self.hitbox.center
+        self.rect.x += self.direction.x * speed
+        self.rect.y += self.direction.y * speed
+        self.rect.center = self.rect.center
+        if self.rect.right >= MAPBOUND_X:  
+            self.rect.right = MAPBOUND_X
+        if self.rect.left <=0:
+            self.rect.x = 0
+        if self.rect.bottom >= MAPBOUND_Y:  
+            self.rect.bottom = MAPBOUND_Y
+        if self.rect.top <=0:
+            self.rect.top = 0
 
     def get_status(self):
         #idle_status
@@ -109,7 +116,7 @@ pygame.transform.scale(pygame.transform.flip(pygame.image.load("assets/player sp
             self.frame_count = 0
         #set the image
         self.image = animation[int(self.frame_count)]
-        self.rect = self.image.get_rect(center =self.hitbox.center )
+        self.rect = self.image.get_rect(center =self.rect.center )
 
     def update(self):
         self.input()
@@ -128,7 +135,7 @@ def display_ui():
         img = pygame.transform.scale(img,(50,50))
         DISPLAY.blit(img,(i*50+WINDOWSIZE[0]/2-player.max_health*25,25))
 
-    score_text = TEXT_FONT.render(f'Score: {score}', True, (0,0,0))
+    score_text = TEXT_FONT.render(f'Score: {score}', True, (255,255,255))
     DISPLAY.blit(score_text,(score_text.get_width()/2,25))
 
 def update_screen():
@@ -143,7 +150,7 @@ while True:
             sys.exit()
 
 
-    DISPLAY.fill((0,255,255))
+    DISPLAY.fill((0,0,0))
     
     camera_group.update()
     camera_group.custom_draw(player)
