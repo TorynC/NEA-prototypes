@@ -137,10 +137,15 @@ def display_ui():
 
     score_text = TEXT_FONT.render(f'Score: {score}', True, (255,255,255))
     DISPLAY.blit(score_text,(score_text.get_width()/2,25))
+    start_time = pygame.time.get_ticks()
+    time_since_start = pygame.time.get_ticks() - start_time
+    time_text = TEXT_FONT.render(f'Time: {time_since_start}',True,(255,255,255))
+    DISPLAY.blit(time_text,(1100,25))
 
 def update_screen():
     clock.tick(60)
     pygame.display.update()
+
 
 #game loop
 while True:
@@ -148,8 +153,7 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
-
-
+    
     DISPLAY.fill((0,0,0))
     
     camera_group.update()
