@@ -143,7 +143,7 @@ while True:
             sys.exit()
 
 
-    DISPLAY.fill((24,164,86))
+    DISPLAY.fill((0,255,255))
     
     camera_group.update()
     camera_group.custom_draw(player)
