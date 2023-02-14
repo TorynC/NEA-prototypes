@@ -142,20 +142,19 @@ class Target():
         self.image = pygame.transform.scale(pygame.image.load("assets/cursor.png"),(width,height))
         self.x = x
         self.y = y
+        self.rect = self.image.get_rect(center = (self.x,self.y))
         self.width = width
         self.height = height
     def update(self):
         mousepos = pygame.mouse.get_pos()
-        self.x = mousepos[0] - self.width/2
-        self.y = mousepos[1] - self.height/2
-        DISPLAY.blit(self.image,(self.x,self.y))
-        
+        self.rect.x = mousepos[0] - self.width/2
+        self.rect.y = mousepos[1] - self.height/2
+        DISPLAY.blit(self.image,(self.rect.x,self.rect.y))
         
 #objects
 camera_group = CameraGroup()
 player = Player((600,400),camera_group)
 target = Target(0,0,30,30)
-
 
 def display_ui():
     for i in range(player.max_health):
