@@ -8,8 +8,8 @@ TEXT_FONT = pygame.font.Font("assets/font.otf", 32)
 WINDOWSIZE = (1280,720)
 
 DISPLAY = pygame.display.set_mode(WINDOWSIZE)
-clock = pygame.time.Clock()
-pygame.display.set_caption("Top Down Shooter")
+CLOCK = pygame.time.Clock()
+pygame.display.set_caption("Grave Fighter")
 MAPBOUND_X = 1800
 MAPBOUND_Y = 1200
 
@@ -125,9 +125,37 @@ pygame.transform.scale(pygame.transform.flip(pygame.image.load("assets/player sp
         
         self.move(self.speed)
 
+#bullet class
+class bullet(pygame.sprite.Sprite):
+    def __init__(self,x,y):
+        super().__init__()
+        self.image = pygame.transform.scale(pygame.image.load("assets/bullet.png"),(30,30))
+        self.rect = self.image.get_rect(center = (x,y) )
+    
+    def update(self):
+        self.rect.x += 5
+
+#target class
+class Target():
+    #x,y,width,height,image
+    def __init__(self,x,y,width,height):
+        self.image = pygame.transform.scale(pygame.image.load("assets/cursor.png"),(width,height))
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+    def update(self):
+        mousepos = pygame.mouse.get_pos()
+        self.x = mousepos[0] - self.width/2
+        self.y = mousepos[1] - self.height/2
+        DISPLAY.blit(self.image,(self.x,self.y))
+        
+        
 #objects
 camera_group = CameraGroup()
 player = Player((600,400),camera_group)
+target = Target(0,0,30,30)
+
 
 def display_ui():
     for i in range(player.max_health):
@@ -143,11 +171,11 @@ def display_ui():
     DISPLAY.blit(time_text,(1100,25))
 
 def update_screen():
-    clock.tick(60)
+    CLOCK.tick(60)
     pygame.display.update()
 
-
 #game loop
+pygame.mouse.set_visible(False)
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -158,6 +186,6 @@ while True:
     
     camera_group.update()
     camera_group.custom_draw(player)
-
+    target.update()
     display_ui()
     update_screen()

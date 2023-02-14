@@ -28,7 +28,7 @@ db.close()
 class Main:
     def __init__(self,master):
         self.master=master
-        self.master.title("Top Down Shooter")
+        self.master.title("Grave Fighter")
         self.master.geometry("600x600")
 
         #for textvariable
