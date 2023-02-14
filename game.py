@@ -42,7 +42,7 @@ class CameraGroup(pygame.sprite.Group):
 class Player(pygame.sprite.Sprite):
     def __init__(self,pos,group):
         super().__init__(group)
-        self.health = self.max_health = 3 #double assignment
+        self.health = self.max_health = 4 #double assignment
         self.image = pygame.transform.scale(pygame.image.load("assets/test.png").convert_alpha(),(40,40))
         self.rect = self.image.get_rect(center = pos)
         self.speed = 5
@@ -117,23 +117,36 @@ pygame.transform.scale(pygame.transform.flip(pygame.image.load("assets/player sp
         #set the image
         self.image = animation[int(self.frame_count)]
         self.rect = self.image.get_rect(center =self.rect.center )
+    
+    def shoot(self):
+        target_center = target.rect.center
+        player_center = player.rect.center
+        bullet = Bullet(player_center[0],player_center[1])
+        bullet.velocity = [target_center[0]-player_center[0],target_center[1]-player_center[1]]
+        magnitude = (bullet.velocity[0]**2+bullet.velocity[1]**2)**0.5
+        bullet.velocity = [bullet.velocity[0]/magnitude*10,bullet.velocity[1]/magnitude*10]
+        bullet.update()
 
     def update(self):
         self.input()
         self.get_status()
         self.animate()
-        
         self.move(self.speed)
 
 #bullet class
-class bullet(pygame.sprite.Sprite):
+class Bullet(pygame.sprite.Sprite):
     def __init__(self,x,y):
         super().__init__()
-        self.image = pygame.transform.scale(pygame.image.load("assets/bullet.png"),(30,30))
-        self.rect = self.image.get_rect(center = (x,y) )
+        self.x = x
+        self.y = y
+        self.image = pygame.transform.scale(pygame.image.load("assets/bullet.png"),(10,10))
+        self.rect = self.image.get_rect(center = (self.x,self.y) )
+        self.velocity = [0,0]
     
     def update(self):
-        self.rect.x += 5
+        self.rect.x += self.velocity[0]
+        self.rect.y += self.velocity[1]
+        DISPLAY.blit(self.image,(self.rect.x,self.rect.y))
 
 #target class
 class Target():
@@ -146,9 +159,9 @@ class Target():
         self.width = width
         self.height = height
     def update(self):
-        mousepos = pygame.mouse.get_pos()
-        self.rect.x = mousepos[0] - self.width/2
-        self.rect.y = mousepos[1] - self.height/2
+        self.rect.center = pygame.mouse.get_pos()
+        self.rect.x = self.rect.center[0] - self.width/2
+        self.rect.y = self.rect.center[1] - self.height/2
         DISPLAY.blit(self.image,(self.rect.x,self.rect.y))
         
 #objects
@@ -173,6 +186,7 @@ def update_screen():
     CLOCK.tick(60)
     pygame.display.update()
 
+
 #game loop
 pygame.mouse.set_visible(False)
 while True:
@@ -180,6 +194,8 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            player.shoot()
     
     DISPLAY.fill((0,0,0))
     
