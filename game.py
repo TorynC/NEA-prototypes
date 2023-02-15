@@ -15,6 +15,7 @@ MAPBOUND_X = 1800
 MAPBOUND_Y = 1200
 bullets = []
 
+
 score = 0 
 class CameraGroup(pygame.sprite.Group):
     def __init__(self):
@@ -49,6 +50,7 @@ class Player(pygame.sprite.Sprite):
         self.speed = 5
         self.direction = pygame.math.Vector2()
 
+        #graphics setup 
         self.frame_count = 0 
         self.import_player_assets()
         self.status = 'idle'
@@ -94,7 +96,7 @@ pygame.transform.scale(pygame.transform.flip(pygame.image.load("assets/player sp
 
         self.rect.centerx += self.direction.x * speed
         self.rect.centery += self.direction.y * speed
-        self.rect.center = self.rect.center
+        
         if self.rect.right >= MAPBOUND_X:  
             self.rect.right = MAPBOUND_X
         if self.rect.left <=0:
@@ -117,13 +119,12 @@ pygame.transform.scale(pygame.transform.flip(pygame.image.load("assets/player sp
             self.frame_count = 0
         #set the image
         self.image = animation[int(self.frame_count)]
-        self.rect = self.image.get_rect(center =self.rect.center )
+        self.rect = self.image.get_rect(center = self.rect.center)
 
     def shoot(self):
-        player_center = self.rect.center
         mouse_pos = pygame.mouse.get_pos()
-        angle = math.atan2((player_center[1]-mouse_pos[1]) , (player_center[0]-mouse_pos[0]))
-        bullet = Bullet(player_center[0],player_center[1],angle)
+        angle = math.atan2((SCREEN_HEIGHT/2-mouse_pos[1]) , (SCREEN_WIDTH/2-mouse_pos[0]))
+        bullet = Bullet(angle,SCREEN_WIDTH/2,SCREEN_HEIGHT/2)
         bullets.append(bullet)
 
     def update(self):
@@ -134,7 +135,7 @@ pygame.transform.scale(pygame.transform.flip(pygame.image.load("assets/player sp
 
 #bullet class
 class Bullet():
-    def __init__(self,x,y, angle):
+    def __init__(self,angle,x,y):
 
         self.image = pygame.transform.scale(pygame.image.load("assets/bullet.png").convert_alpha(),(20,10))
         self.rect = self.image.get_rect(center = (x,y) )
@@ -146,6 +147,7 @@ class Bullet():
         self.rect.x -= int(math.cos(self.angle)* self.speed)
         DISPLAY.blit(self.image,(self.rect.x,self.rect.y))
 
+    
 #target class
 class Target():
     #x,y,width,height,image
