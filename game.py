@@ -15,6 +15,8 @@ MAPBOUND_X = 1800
 MAPBOUND_Y = 1200
 bullets = []
 
+#halfx = 360
+#halfy = 640
 
 score = 0 
 class CameraGroup(pygame.sprite.Group):
@@ -29,7 +31,6 @@ class CameraGroup(pygame.sprite.Group):
         self.half_h = self.display_surface.get_size()[1]//2
 
     def custom_draw(self,player):
-
         self.offset.x = player.rect.centerx - self.half_w
         self.offset.y = player.rect.centery - self.half_h
 
@@ -133,6 +134,20 @@ pygame.transform.scale(pygame.transform.flip(pygame.image.load("assets/player sp
         self.animate()
         self.move(self.speed)
 
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.health = 4
+        self.image = pygame.transform.scale(pygame.image.load("assets/E-tile000.png").convert_alpha(),(40,40))
+        self.rect = self.image.get_rect(center = (600,300))
+        self.speed = 5
+    def update(self):
+        player_center = [SCREEN_WIDTH/2,SCREEN_HEIGHT/2]
+        self.velocity = [player_center[0]-self.rect.x,player_center[1]-self.rect.y]
+        self.rect.x += self.velocity[0] *self.speed
+        self.rect.y += self.velocity[1] * self.speed
+        DISPLAY.blit(self.image,(self.rect.x,self.rect.y))
+
 #bullet class
 class Bullet():
     def __init__(self,angle,x,y):
@@ -144,10 +159,9 @@ class Bullet():
 
     def change(self):
         self.rect.y -= int(math.sin(self.angle) * self.speed)
-        self.rect.x -= int(math.cos(self.angle)* self.speed)
+        self.rect.x -= int(math.cos(self.angle) * self.speed)
         DISPLAY.blit(self.image,(self.rect.x,self.rect.y))
 
-    
 #target class
 class Target():
     #x,y,width,height,image
@@ -168,7 +182,7 @@ class Target():
 camera_group = CameraGroup()
 player = Player(camera_group)
 target = Target(0,0,30,30)
-
+enemy = Enemy()
 def display_ui():
     for i in range(player.max_health):
         img = pygame.image.load("assets/heart_empty.png" if i >= player.health else "assets/heart.png")
@@ -201,9 +215,10 @@ while True:
     camera_group.update()
     camera_group.custom_draw(player)
     target.update()
+    enemy.update()
 
-    for bullet in bullets:
-        bullet.change()
+    for b in bullets:
+        b.change()
 
     display_ui()
     update_screen()
