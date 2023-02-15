@@ -1,17 +1,19 @@
-import pygame,sys
+import pygame,sys,math
 #pygame setup
 pygame.init()
 pygame.font.get_init()
 
 TEXT_FONT = pygame.font.Font("assets/font.otf", 32)
-
-WINDOWSIZE = (1280,720)
+SCREEN_WIDTH = 1280
+SCREEN_HEIGHT = 720
+WINDOWSIZE = (SCREEN_WIDTH,SCREEN_HEIGHT)
 
 DISPLAY = pygame.display.set_mode(WINDOWSIZE)
 CLOCK = pygame.time.Clock()
 pygame.display.set_caption("Grave Fighter")
 MAPBOUND_X = 1800
 MAPBOUND_Y = 1200
+bullets = []
 
 score = 0 
 class CameraGroup(pygame.sprite.Group):
@@ -24,7 +26,6 @@ class CameraGroup(pygame.sprite.Group):
         self.offset = pygame.math.Vector2()
         self.half_w = self.display_surface.get_size()[0]//2
         self.half_h = self.display_surface.get_size()[1]//2
-        
 
     def custom_draw(self,player):
 
@@ -40,11 +41,11 @@ class CameraGroup(pygame.sprite.Group):
 
 #player class
 class Player(pygame.sprite.Sprite):
-    def __init__(self,pos,group):
+    def __init__(self,group):
         super().__init__(group)
         self.health = self.max_health = 4 #double assignment
         self.image = pygame.transform.scale(pygame.image.load("assets/test.png").convert_alpha(),(40,40))
-        self.rect = self.image.get_rect(center = pos)
+        self.rect = self.image.get_rect(center = (SCREEN_WIDTH/2,SCREEN_HEIGHT/2))
         self.speed = 5
         self.direction = pygame.math.Vector2()
 
@@ -91,13 +92,13 @@ pygame.transform.scale(pygame.transform.flip(pygame.image.load("assets/player sp
         if self.direction.magnitude()!=0:
             self.direction = self.direction.normalize()
 
-        self.rect.x += self.direction.x * speed
-        self.rect.y += self.direction.y * speed
+        self.rect.centerx += self.direction.x * speed
+        self.rect.centery += self.direction.y * speed
         self.rect.center = self.rect.center
         if self.rect.right >= MAPBOUND_X:  
             self.rect.right = MAPBOUND_X
         if self.rect.left <=0:
-            self.rect.x = 0
+            self.rect.left = 0
         if self.rect.bottom >= MAPBOUND_Y:  
             self.rect.bottom = MAPBOUND_Y
         if self.rect.top <=0:
@@ -117,15 +118,13 @@ pygame.transform.scale(pygame.transform.flip(pygame.image.load("assets/player sp
         #set the image
         self.image = animation[int(self.frame_count)]
         self.rect = self.image.get_rect(center =self.rect.center )
-    
+
     def shoot(self):
-        target_center = target.rect.center
-        player_center = player.rect.center
-        bullet = Bullet(player_center[0],player_center[1])
-        bullet.velocity = [target_center[0]-player_center[0],target_center[1]-player_center[1]]
-        magnitude = (bullet.velocity[0]**2+bullet.velocity[1]**2)**0.5
-        bullet.velocity = [bullet.velocity[0]/magnitude*10,bullet.velocity[1]/magnitude*10]
-        bullet.update()
+        player_center = self.rect.center
+        mouse_pos = pygame.mouse.get_pos()
+        angle = math.atan2((player_center[1]-mouse_pos[1]) , (player_center[0]-mouse_pos[0]))
+        bullet = Bullet(player_center[0],player_center[1],angle)
+        bullets.append(bullet)
 
     def update(self):
         self.input()
@@ -134,18 +133,17 @@ pygame.transform.scale(pygame.transform.flip(pygame.image.load("assets/player sp
         self.move(self.speed)
 
 #bullet class
-class Bullet(pygame.sprite.Sprite):
-    def __init__(self,x,y):
-        super().__init__()
-        self.x = x
-        self.y = y
-        self.image = pygame.transform.scale(pygame.image.load("assets/bullet.png"),(10,10))
-        self.rect = self.image.get_rect(center = (self.x,self.y) )
-        self.velocity = [0,0]
-    
-    def update(self):
-        self.rect.x += self.velocity[0]
-        self.rect.y += self.velocity[1]
+class Bullet():
+    def __init__(self,x,y, angle):
+
+        self.image = pygame.transform.scale(pygame.image.load("assets/bullet.png").convert_alpha(),(20,10))
+        self.rect = self.image.get_rect(center = (x,y) )
+        self.angle = angle
+        self.speed = 15
+
+    def change(self):
+        self.rect.y -= int(math.sin(self.angle) * self.speed)
+        self.rect.x -= int(math.cos(self.angle)* self.speed)
         DISPLAY.blit(self.image,(self.rect.x,self.rect.y))
 
 #target class
@@ -166,7 +164,7 @@ class Target():
         
 #objects
 camera_group = CameraGroup()
-player = Player((600,400),camera_group)
+player = Player(camera_group)
 target = Target(0,0,30,30)
 
 def display_ui():
@@ -185,8 +183,7 @@ def display_ui():
 def update_screen():
     CLOCK.tick(60)
     pygame.display.update()
-
-
+        
 #game loop
 pygame.mouse.set_visible(False)
 while True:
@@ -202,5 +199,9 @@ while True:
     camera_group.update()
     camera_group.custom_draw(player)
     target.update()
+
+    for bullet in bullets:
+        bullet.change()
+
     display_ui()
     update_screen()
