@@ -1,4 +1,4 @@
-import pygame,sys,math,random
+import pygame,sys,math
 #pygame setup
 pygame.init()
 pygame.font.get_init()
@@ -144,17 +144,21 @@ class Enemy(pygame.sprite.Sprite):
         self.x = x
         self.y = y
         self.health = 4
-        self.image = pygame.transform.scale(pygame.image.load("assets/E-tile000.png").convert_alpha(),(40,40))
+        self.image = pygame.transform.scale(pygame.image.load("assets/enemy sprite 2/E2-tile000.png").convert_alpha(),(40,40))
         self.rect = self.image.get_rect(center = (self.x,self.y))
-        self.speed = 5
-        self.direction = pygame.math.Vector2()
+        self.animations = [pygame.transform.scale(pygame.image.load("assets/enemy sprite 3/slime_animation_0.png").convert_alpha(),(40,40)),
+        pygame.transform.scale(pygame.image.load("assets/enemy sprite 3/slime_animation_1.png").convert_alpha(),(40,40)),
+        pygame.transform.scale(pygame.image.load("assets/enemy sprite 3/slime_animation_2.png").convert_alpha(),(40,40))]
+        self.animationcount = 0
         
     def update(self):
+        #animation
+        if self.animationcount +1 == 12:
+            self.animationcount = 0
+        self.animationcount += 1
+        
+        #for following player 
         player_center = [SCREEN_WIDTH/2,SCREEN_HEIGHT/2]
-        '''self.direction.x = player_center[0]-self.rect.x
-        self.direction.y =player_center[1]-self.rect.y
-        self.rect.centerx += self.direction.x *self.speed
-        self.rect.centery += self.direction.y * self.speed'''
         if player_center[0] > self.rect.centerx - camera_group.offset.x:
             self.rect.centerx += 3
         elif player_center[0] < self.rect.centerx - camera_group.offset.x:
@@ -165,7 +169,7 @@ class Enemy(pygame.sprite.Sprite):
         elif player_center[1] < self.rect.centery - camera_group.offset.y:
             self.rect.centery -= 3
 
-        DISPLAY.blit(self.image,(self.rect.centerx-camera_group.offset.x,self.rect.centery-camera_group.offset.y))
+        DISPLAY.blit(self.animations[self.animationcount//4],(self.rect.centerx-camera_group.offset.x,self.rect.centery-camera_group.offset.y))
         
 #bullet class
 class Bullet():
@@ -201,7 +205,8 @@ class Target():
 camera_group = CameraGroup()
 player = Player(camera_group)
 target = Target(0,0,30,30)
-enemy = Enemy(500,500)
+enemy = Enemy(900,720)
+
 def display_ui():
     for i in range(player.max_health):
         img = pygame.image.load("assets/heart_empty.png" if i >= player.health else "assets/heart.png")
