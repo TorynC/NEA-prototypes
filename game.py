@@ -1,4 +1,4 @@
-import pygame,sys,math
+import pygame,sys,math,random
 #pygame setup
 pygame.init()
 pygame.font.get_init()
@@ -37,15 +37,12 @@ class CameraGroup(pygame.sprite.Group):
     def custom_draw(self,player):
         self.offset.x = player.rect.centerx - self.half_w
         self.offset.y = player.rect.centery - self.half_h
-        enemy.draw()
         ground_offset = self.ground_rect.topleft - self.offset
         self.display_surface.blit(self.ground_surf,ground_offset)
 
         for sprite in self.sprites():
             offset_pos = sprite.rect.topleft - self.offset
             self.display_surface.blit(sprite.image,offset_pos)
-        
-
         
 
 #player class
@@ -144,22 +141,32 @@ pygame.transform.scale(pygame.transform.flip(pygame.image.load("assets/player sp
 class Enemy(pygame.sprite.Sprite):
     def __init__(self,x,y):
         super().__init__()
+        self.x = x
+        self.y = y
         self.health = 4
         self.image = pygame.transform.scale(pygame.image.load("assets/E-tile000.png").convert_alpha(),(40,40))
-        self.rect = self.image.get_rect(center = (x,y))
+        self.rect = self.image.get_rect(center = (self.x,self.y))
         self.speed = 5
         self.direction = pygame.math.Vector2()
         
     def update(self):
-
         player_center = [SCREEN_WIDTH/2,SCREEN_HEIGHT/2]
-        self.direction.x = player_center[0]-self.rect.x
+        '''self.direction.x = player_center[0]-self.rect.x
         self.direction.y =player_center[1]-self.rect.y
         self.rect.centerx += self.direction.x *self.speed
-        self.rect.centery += self.direction.y * self.speed
-        DISPLAY.blit(self.image,(500,500))
+        self.rect.centery += self.direction.y * self.speed'''
+        if player_center[0] > self.rect.centerx - camera_group.offset.x:
+            self.rect.centerx += 3
+        elif player_center[0] < self.rect.centerx - camera_group.offset.x:
+            self.rect.centerx -= 3
 
+        if player_center[1] > self.rect.centery - camera_group.offset.y:
+            self.rect.centery += 3
+        elif player_center[1] < self.rect.centery - camera_group.offset.y:
+            self.rect.centery -= 3
 
+        DISPLAY.blit(self.image,(self.rect.centerx-camera_group.offset.x,self.rect.centery-camera_group.offset.y))
+        
 #bullet class
 class Bullet():
     def __init__(self,angle,x,y):
@@ -227,7 +234,7 @@ while True:
     camera_group.update()
     camera_group.custom_draw(player)
     target.update()
-    
+    enemy.update()
 
     for b in bullets:
         b.change()
