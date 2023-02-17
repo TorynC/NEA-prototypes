@@ -14,9 +14,7 @@ pygame.display.set_caption("Grave Fighter")
 MAPBOUND_X = 1800
 MAPBOUND_Y = 1200
 bullets = []
-
-#halfx = 360
-#halfy = 640
+enemies = []
 
 class Game():
     def __init__(self):
@@ -52,7 +50,7 @@ class Player(pygame.sprite.Sprite):
         self.health = self.max_health = 4 #double assignment
         self.image = pygame.transform.scale(pygame.image.load("assets/test.png").convert_alpha(),(40,40))
         self.rect = self.image.get_rect(center = (SCREEN_WIDTH/2,SCREEN_HEIGHT/2))
-        self.speed = 5
+        self.speed = 4
         self.direction = pygame.math.Vector2()
 
         #graphics setup 
@@ -98,7 +96,7 @@ pygame.transform.scale(pygame.transform.flip(pygame.image.load("assets/player sp
     def move(self,speed):
         if self.direction.magnitude()!=0:
             self.direction = self.direction.normalize()
-
+        
         self.rect.centerx += self.direction.x * speed
         self.rect.centery += self.direction.y * speed
         
@@ -129,8 +127,8 @@ pygame.transform.scale(pygame.transform.flip(pygame.image.load("assets/player sp
     def shoot(self):
         mouse_pos = pygame.mouse.get_pos()
         angle = math.atan2((SCREEN_HEIGHT/2-mouse_pos[1]) , (SCREEN_WIDTH/2-mouse_pos[0]))
-        bullet = Bullet(angle,SCREEN_WIDTH/2,SCREEN_HEIGHT/2)
-        bullets.append(bullet)
+        self.bullet = Bullet(angle,SCREEN_WIDTH/2,SCREEN_HEIGHT/2)
+        bullets.append(self.bullet)
 
     def update(self):
         self.input()
@@ -150,6 +148,7 @@ class Enemy(pygame.sprite.Sprite):
         pygame.transform.scale(pygame.image.load("assets/enemy sprite 3/slime_animation_1.png").convert_alpha(),(40,40)),
         pygame.transform.scale(pygame.image.load("assets/enemy sprite 3/slime_animation_2.png").convert_alpha(),(40,40))]
         self.animationcount = 0
+        enemies.append(self)
         
     def update(self):
         #animation
@@ -169,6 +168,8 @@ class Enemy(pygame.sprite.Sprite):
         elif player_center[1] < self.rect.centery - camera_group.offset.y:
             self.rect.centery -= 3
 
+        if player.bullet.rect.centerx == self.rect.centerx:
+            bullets.remove(player.bullet)
         DISPLAY.blit(self.animations[self.animationcount//4],(self.rect.centerx-camera_group.offset.x,self.rect.centery-camera_group.offset.y))
         
 #bullet class
@@ -240,8 +241,10 @@ while True:
     camera_group.update()
     camera_group.custom_draw(player)
     target.update()
-    enemy.update()
-    enemy2.update()
+    
+    for e in enemies:
+        e.update()
+        
 
     for b in bullets:
         b.change()
