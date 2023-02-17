@@ -206,6 +206,7 @@ camera_group = CameraGroup()
 player = Player(camera_group)
 target = Target(0,0,30,30)
 enemy = Enemy(900,720)
+enemy2 = Enemy(500,200)
 
 def display_ui():
     for i in range(player.max_health):
@@ -240,6 +241,7 @@ while True:
     camera_group.custom_draw(player)
     target.update()
     enemy.update()
+    enemy2.update()
 
     for b in bullets:
         b.change()
