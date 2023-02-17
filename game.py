@@ -250,3 +250,10 @@ while True:
     update_screen()
 
 #make game class and run it and so you can use composition for the player 
+#clean up code 
+#add timer and spawning of enemies 
+#kill and score 
+#enemy queue
+#lose health when enemies touch 
+#obstacles forbullets to bounce off 
+#add score and time to database
