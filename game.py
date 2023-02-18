@@ -50,7 +50,7 @@ class Player(pygame.sprite.Sprite):
         self.health = self.max_health = 4 #double assignment
         self.image = pygame.transform.scale(pygame.image.load("assets/test.png").convert_alpha(),(40,40))
         self.rect = self.image.get_rect(center = (SCREEN_WIDTH/2,SCREEN_HEIGHT/2))
-        self.speed = 4
+        self.speed = 5
         self.direction = pygame.math.Vector2()
 
         #graphics setup 
@@ -174,9 +174,9 @@ class Bullet():
         self.speed = 15
 
     def change(self):
-        self.rect.centery -= int(math.sin(self.angle) * self.speed)
-        self.rect.centerx -= int(math.cos(self.angle) * self.speed)
-        DISPLAY.blit(self.image,(self.rect.centerx,self.rect.centery))
+        self.rect.y -= int(math.sin(self.angle) * self.speed)
+        self.rect.x -= int(math.cos(self.angle) * self.speed)
+        DISPLAY.blit(self.image,(self.rect.x,self.rect.y))
 
 #target class
 class Target():
@@ -198,10 +198,10 @@ class Target():
 camera_group = CameraGroup()
 player = Player(camera_group)
 target = Target(0,0,30,30)
-enemy = Enemy(900,720)
-enemy = Enemy(10,500)
-enemy = Enemy(100,250)
-enemy = Enemy(10,900)
+enemy1 = Enemy(900,720)
+enemy2 = Enemy(10,500)
+enemy3 = Enemy(100,250)
+enemy4 = Enemy(10,900)
 
 def display_ui():
     for i in range(player.max_health):
@@ -237,6 +237,7 @@ while True:
             sys.exit()
         if event.type == pygame.MOUSEBUTTONDOWN:
             shoot()
+            
     
     DISPLAY.fill((0,0,0))
     
@@ -244,11 +245,8 @@ while True:
     camera_group.custom_draw(player)
     target.update()
     
-    
-
     for e in enemies:
         e.update()
-
         if e.rect.colliderect(player.rect):
             if player.rect.top-e.rect.bottom < collision_tolerance:
                 enemies.remove(e)
@@ -262,19 +260,25 @@ while True:
             elif player.rect.left - e.rect.right < collision_tolerance:
                 enemies.remove(e)
                 player.health -=1
-        
     
     for b in bullets:
         b.change()
+        
+    for b in bullets:
+        for e in enemies:
+            if b.rect.colliderect(e.rect):
+                if b.rect.top-e.rect.bottom < collision_tolerance :
+                    enemies.remove(e)
+                    bullets.remove(b)
+                elif b.rect.bottom - e.rect.top < collision_tolerance :
+                    enemies.remove(e)
+                    bullets.remove(b)
+                elif b.rect.right - e.rect.left < collision_tolerance :
+                    enemies.remove(e)
+                    bullets.remove(b)
+                elif b.rect.left - e.rect.right < collision_tolerance :
+                    enemies.remove(e)
+                    bullets.remove(b)
 
     display_ui()
     update_screen()
-
-#make game class and run it and so you can use composition for the player 
-#clean up code 
-#add timer and spawning of enemies 
-#kill and score 
-#enemy queue
-#lose health when enemies touch 
-#obstacles forbullets to bounce off 
-#add score and time to database
