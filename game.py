@@ -99,7 +99,6 @@ pygame.transform.scale(pygame.transform.flip(pygame.image.load("assets/player sp
         
         self.rect.centerx += self.direction.x * speed
         self.rect.centery += self.direction.y * speed
-        
         if self.rect.right >= MAPBOUND_X:  
             self.rect.right = MAPBOUND_X
         if self.rect.left <=0:
@@ -123,13 +122,7 @@ pygame.transform.scale(pygame.transform.flip(pygame.image.load("assets/player sp
         #set the image
         self.image = animation[int(self.frame_count)]
         self.rect = self.image.get_rect(center = self.rect.center)
-
-    def shoot(self):
-        mouse_pos = pygame.mouse.get_pos()
-        angle = math.atan2((SCREEN_HEIGHT/2-mouse_pos[1]) , (SCREEN_WIDTH/2-mouse_pos[0]))
-        self.bullet = Bullet(angle,SCREEN_WIDTH/2,SCREEN_HEIGHT/2)
-        bullets.append(self.bullet)
-
+        
     def update(self):
         self.input()
         self.get_status()
@@ -167,24 +160,23 @@ class Enemy(pygame.sprite.Sprite):
             self.rect.centery += 3
         elif player_center[1] < self.rect.centery - camera_group.offset.y:
             self.rect.centery -= 3
-
-        if player.bullet.rect.centerx == self.rect.centerx:
-            bullets.remove(player.bullet)
+        
+        #+2 or -1x
         DISPLAY.blit(self.animations[self.animationcount//4],(self.rect.centerx-camera_group.offset.x,self.rect.centery-camera_group.offset.y))
         
 #bullet class
 class Bullet():
     def __init__(self,angle,x,y):
 
-        self.image = pygame.transform.scale(pygame.image.load("assets/bullet.png").convert_alpha(),(20,10))
+        self.image = pygame.transform.scale(pygame.image.load("assets/bullet.png").convert_alpha(),(16,16))
         self.rect = self.image.get_rect(center = (x,y) )
         self.angle = angle
         self.speed = 15
 
     def change(self):
-        self.rect.y -= int(math.sin(self.angle) * self.speed)
-        self.rect.x -= int(math.cos(self.angle) * self.speed)
-        DISPLAY.blit(self.image,(self.rect.x,self.rect.y))
+        self.rect.centery -= int(math.sin(self.angle) * self.speed)
+        self.rect.centerx -= int(math.cos(self.angle) * self.speed)
+        DISPLAY.blit(self.image,(self.rect.centerx,self.rect.centery))
 
 #target class
 class Target():
@@ -207,7 +199,9 @@ camera_group = CameraGroup()
 player = Player(camera_group)
 target = Target(0,0,30,30)
 enemy = Enemy(900,720)
-enemy2 = Enemy(500,200)
+enemy = Enemy(10,500)
+enemy = Enemy(100,250)
+enemy = Enemy(10,900)
 
 def display_ui():
     for i in range(player.max_health):
@@ -225,8 +219,16 @@ def display_ui():
 def update_screen():
     CLOCK.tick(60)
     pygame.display.update()
+
+def shoot():
+        mouse_pos = pygame.mouse.get_pos()
+        angle = math.atan2((SCREEN_HEIGHT/2-mouse_pos[1]) , (SCREEN_WIDTH/2-mouse_pos[0]))
+        bullet = Bullet(angle,SCREEN_WIDTH/2,SCREEN_HEIGHT/2)
+        bullets.append(bullet)
         
 #game loop
+is_gameover = False
+collision_tolerance = 10
 pygame.mouse.set_visible(False)
 while True:
     for event in pygame.event.get():
@@ -234,7 +236,7 @@ while True:
             pygame.quit()
             sys.exit()
         if event.type == pygame.MOUSEBUTTONDOWN:
-            player.shoot()
+            shoot()
     
     DISPLAY.fill((0,0,0))
     
@@ -242,10 +244,26 @@ while True:
     camera_group.custom_draw(player)
     target.update()
     
+    
+
     for e in enemies:
         e.update()
-        
 
+        if e.rect.colliderect(player.rect):
+            if player.rect.top-e.rect.bottom < collision_tolerance:
+                enemies.remove(e)
+                player.health -=1
+            elif player.rect.bottom - e.rect.top < collision_tolerance:
+                enemies.remove(e)
+                player.health -=1
+            elif player.rect.right - e.rect.left < collision_tolerance:
+                enemies.remove(e)
+                player.health -=1
+            elif player.rect.left - e.rect.right < collision_tolerance:
+                enemies.remove(e)
+                player.health -=1
+        
+    
     for b in bullets:
         b.change()
 
