@@ -118,7 +118,7 @@ class Main:
             cursor2.execute('INSERT INTO LoggedIn(Username,Password,TutorGroup) VALUES(?,?,?)',[self.username.get(),self.password.get(),self.tutorgroup.get()])
             db.commit()
             window1.destroy()
-            import game
+            import test2
 
         else:
             self.message2 = Label(self.login_frame,text="User not found.").grid(row=8,column=1)

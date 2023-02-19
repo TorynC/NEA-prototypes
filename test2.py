@@ -32,7 +32,7 @@ class Player(pygame.sprite.Sprite):
             "assets/test.png").convert_alpha(), (40, 40))
         self.rect = self.image.get_rect(
             center=(SCREEN_WIDTH/2, SCREEN_HEIGHT/2))
-        self.speed = 5
+        self.speed = 4
         self.direction = pygame.math.Vector2()
         # self.enemies = pygame.sprite.Group()
         self.bullets = pygame.sprite.Group()
