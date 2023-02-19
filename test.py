@@ -1,4 +1,4 @@
-import pygame,sys,math,random
+import pygame,sys,math
 #pygame setup
 pygame.init()
 pygame.font.get_init()
@@ -11,68 +11,12 @@ WINDOWSIZE = (SCREEN_WIDTH,SCREEN_HEIGHT)
 DISPLAY = pygame.display.set_mode(WINDOWSIZE)
 CLOCK = pygame.time.Clock()
 pygame.display.set_caption("Grave Fighter")
-MAPBOUND_X = 1800
-MAPBOUND_Y = 1200
 
-class Game:
-    def __init__(self):
-        self.camera_group = CameraGroup()
-        self.player_sprite = Player(self.camera_group)
-        self.target = Target(0,0,30,30)
-        self.enemy_sprite = Enemy(900,200)
-        self.enemies = pygame.sprite.Group()
-        self.player = pygame.sprite.GroupSingle(self.player_sprite)
+bullets = []
+enemies = []
 
-        self.score = 0
-
-    def update_screen(self):
-        CLOCK.tick(60)
-        pygame.display.update()
-
-    def display_ui(self):
-        for i in range(self.player.max_health):
-            img = pygame.image.load("assets/heart_empty.png" if i >= self.player.health else "assets/heart.png")
-            img = pygame.transform.scale(img,(50,50))
-            DISPLAY.blit(img,(i*50+WINDOWSIZE[0]/2-self.player.max_health*25,25))
-
-        score_text = TEXT_FONT.render(f'Score: {self.score}', True, (255,255,255))
-        DISPLAY.blit(score_text,(score_text.get_width()/2,25))
-        start_time = pygame.time.get_ticks()
-        time_since_start = pygame.time.get_ticks() - start_time
-        time_text = TEXT_FONT.render(f'Time: {time_since_start}',True,(255,255,255))
-        DISPLAY.blit(time_text,(1100,25))
-
-    def player_enemy_collision(self):
-            self.enemy_sprite.update()
-            '''if self.enemy_sprite.rect.colliderect(self.player.rect):
-                if self.player.rect.top-self.enemy_sprite.rect.bottom < collision_tolerance:
-                    self.enemy_sprite.kill()
-                    self.player.health -=1
-                elif self.player.rect.bottom - self.enemy_sprite.rect.top < collision_tolerance:
-                    self.enemy_sprite.kill()
-                    self.player.health -=1
-                elif self.player.rect.right - self.enemy_sprite.rect.left < collision_tolerance:
-                    self.enemy_sprite.kill()
-                    self.player.health -=1
-                elif self.player.rect.left - self.enemy_sprite.rect.right < collision_tolerance:
-                    self.enemy_sprite.kill()
-                    self.player.health -=1'''
-            if pygame.sprite.spritecollide(self.player,self.enemies,True):
-                self.player.kill()
-                self.player.health -= 1
-            
-    def bullet_enemy_collision(self):
-        for bullet in self.player.bullets:
-            if bullet.rect.colliderect(self.enemy_sprite):
-                self.player.bullets.remove(bullet)
-
-    def run(self):
-        self.player.draw(DISPLAY)
-
-    def add_enemies(self):
-        self.enemies.add(self.enemy_sprite)
-
-class CameraGroup(pygame.sprite.Group):
+score = 0 
+'''class CameraGroup(pygame.sprite.Group):
     def __init__(self):
         super().__init__()
         self.display_surface= pygame.display.get_surface()
@@ -91,7 +35,7 @@ class CameraGroup(pygame.sprite.Group):
 
         for sprite in self.sprites():
             offset_pos = sprite.rect.topleft - self.offset
-            self.display_surface.blit(sprite.image,offset_pos)
+            self.display_surface.blit(sprite.image,offset_pos)'''
         
 
 #player class
@@ -103,8 +47,6 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center = (SCREEN_WIDTH/2,SCREEN_HEIGHT/2))
         self.speed = 5
         self.direction = pygame.math.Vector2()
-
-        self.bullets = pygame.sprite.Group()
 
         #graphics setup 
         self.frame_count = 0 
@@ -152,12 +94,12 @@ pygame.transform.scale(pygame.transform.flip(pygame.image.load("assets/player sp
         
         self.rect.centerx += self.direction.x * speed
         self.rect.centery += self.direction.y * speed
-        if self.rect.right >= MAPBOUND_X:  
-            self.rect.right = MAPBOUND_X
+        if self.rect.right >= SCREEN_WIDTH:  
+            self.rect.right = SCREEN_WIDTH
         if self.rect.left <=0:
             self.rect.left = 0
-        if self.rect.bottom >= MAPBOUND_Y:  
-            self.rect.bottom = MAPBOUND_Y
+        if self.rect.bottom >= SCREEN_HEIGHT:  
+            self.rect.bottom = SCREEN_HEIGHT
         if self.rect.top <=0:
             self.rect.top = 0
 
@@ -182,12 +124,6 @@ pygame.transform.scale(pygame.transform.flip(pygame.image.load("assets/player sp
         self.animate()
         self.move(self.speed)
 
-    def shoot(self):
-        mouse_pos = pygame.mouse.get_pos()
-        angle = math.atan2((SCREEN_HEIGHT/2-mouse_pos[1]) , (SCREEN_WIDTH/2-mouse_pos[0]))
-        bullet = Bullet(angle,SCREEN_WIDTH/2,SCREEN_HEIGHT/2)
-        self.bullets.add(bullet)
-
 class Enemy(pygame.sprite.Sprite):
     def __init__(self,x,y):
         super().__init__()
@@ -200,6 +136,8 @@ class Enemy(pygame.sprite.Sprite):
         pygame.transform.scale(pygame.image.load("assets/enemy sprite 3/slime_animation_1.png").convert_alpha(),(40,40)),
         pygame.transform.scale(pygame.image.load("assets/enemy sprite 3/slime_animation_2.png").convert_alpha(),(40,40))]
         self.animationcount = 0
+        enemies.append(self)
+
         
     def update(self):
         #animation
@@ -209,35 +147,35 @@ class Enemy(pygame.sprite.Sprite):
         
         #for following player 
         player_center = [SCREEN_WIDTH/2,SCREEN_HEIGHT/2]
-        if player_center[0] > self.rect.centerx - game.camera_group.offset.x:
+        if player_center[0] > self.rect.centerx - camera_group.offset.x:
             self.rect.centerx += 3
-        elif player_center[0] < self.rect.centerx - game.camera_group.offset.x:
+        elif player_center[0] < self.rect.centerx - camera_group.offset.x:
             self.rect.centerx -= 3
 
-        if player_center[1] > self.rect.centery - game.camera_group.offset.y:
+        if player_center[1] > self.rect.centery - camera_group.offset.y:
             self.rect.centery += 3
-        elif player_center[1] < self.rect.centery - game.camera_group.offset.y:
+        elif player_center[1] < self.rect.centery - camera_group.offset.y:
             self.rect.centery -= 3
         
         #+2 or -1x
-        DISPLAY.blit(self.animations[self.animationcount//4],(self.rect.centerx-game.camera_group.offset.x,self.rect.centery-game.camera_group.offset.y))
+        DISPLAY.blit(self.animations[self.animationcount//4],(self.rect.centerx-camera_group.offset.x,self.rect.centery-camera_group.offset.y))
         
 #bullet class
-class Bullet(pygame.sprite.Sprite):
+class Bullet():
     def __init__(self,angle,x,y):
-        super().__init__()
+
         self.image = pygame.transform.scale(pygame.image.load("assets/bullet.png").convert_alpha(),(16,16))
         self.rect = self.image.get_rect(center = (x,y) )
         self.angle = angle
         self.speed = 15
 
     def change(self):
-        self.rect.y -= int(math.sin(self.angle) * self.speed)
-        self.rect.x -= int(math.cos(self.angle) * self.speed)
+        self.rect.centery -= int(math.sin(self.angle) * self.speed)
+        self.rect.centerx -= int(math.cos(self.angle) * self.speed)
         DISPLAY.blit(self.image,(self.rect.x,self.rect.y))
 
 #target class
-class Target:
+class Target():
     #x,y,width,height,image
     def __init__(self,x,y,width,height):
         self.image = pygame.transform.scale(pygame.image.load("assets/cursor.png"),(width,height))
@@ -251,32 +189,82 @@ class Target:
         self.rect.x = self.rect.center[0] - self.width/2
         self.rect.y = self.rect.center[1] - self.height/2
         DISPLAY.blit(self.image,(self.rect.x,self.rect.y))
+        
+#objects
+camera_group = CameraGroup()
+player = Player(camera_group)
+target = Target(0,0,30,30)
+enemy1 = Enemy(900,720)
+enemy2 = Enemy(10,500)
+enemy3 = Enemy(100,250)
+enemy4 = Enemy(10,900)
 
+def display_ui():
+    for i in range(player.max_health):
+        img = pygame.image.load("assets/heart_empty.png" if i >= player.health else "assets/heart.png")
+        img = pygame.transform.scale(img,(50,50))
+        DISPLAY.blit(img,(i*50+WINDOWSIZE[0]/2-player.max_health*25,25))
+
+    score_text = TEXT_FONT.render(f'Score: {score}', True, (255,255,255))
+    DISPLAY.blit(score_text,(score_text.get_width()/2,25))
+    start_time = pygame.time.get_ticks()
+    time_since_start = pygame.time.get_ticks() - start_time
+    time_text = TEXT_FONT.render(f'Time: {time_since_start}',True,(255,255,255))
+    DISPLAY.blit(time_text,(1100,25))
+
+def update_screen():
+    CLOCK.tick(60)
+    pygame.display.update()
+
+def shoot():
+        mouse_pos = pygame.mouse.get_pos()
+        angle = math.atan2((SCREEN_HEIGHT//2-mouse_pos[1]) , (SCREEN_WIDTH//2-mouse_pos[0]))
+        bullet = Bullet(angle,SCREEN_WIDTH//2,SCREEN_HEIGHT//2)
+        bullets.append(bullet)
 
 #game loop
+is_gameover = False
 collision_tolerance = 10
-
-game = Game()
 pygame.mouse.set_visible(False)
-
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
         if event.type == pygame.MOUSEBUTTONDOWN:
-            game.player.shoot()
+            shoot()
+            
     
     DISPLAY.fill((0,0,0))
     
-    game.camera_group.update()
-    game.camera_group.custom_draw(game.player)
-    game.target.update()
-
-    for b in game.player.bullets:
+    camera_group.update()
+    camera_group.custom_draw(player)
+    target.update()
+    
+    for e in enemies:
+        e.update()
+        if e.rect.colliderect(player.rect):
+            if player.rect.top-e.rect.bottom < collision_tolerance:
+                enemies.remove(e)
+                player.health -=1
+            elif player.rect.bottom - e.rect.top < collision_tolerance:
+                enemies.remove(e)
+                player.health -=1
+            elif player.rect.right - e.rect.left < collision_tolerance:
+                enemies.remove(e)
+                player.health -=1
+            elif player.rect.left - e.rect.right < collision_tolerance:
+                enemies.remove(e)
+                player.health -=1
+    
+    for b in bullets:
         b.change()
 
-    game.add_enemies()
-    game.player_enemy_collision()
-    game.display_ui()
-    game.update_screen()
+    for e in enemies:
+        for b in bullets:
+            if b.rect.colliderect(e.rect):
+                enemies.remove(e)
+                score += 10
+
+    display_ui()
+    update_screen()
