@@ -205,8 +205,7 @@ class Bullet(pygame.sprite.Sprite):
         if self.rect.x <= -50 or self.rect.x >= SCREEN_WIDTH + 50:
             self.speed = -15
 
-
-class Target():
+class Target:
     def __init__(self, x, y, width, height):
         self.image = pygame.transform.scale(
             pygame.image.load("assets/cursor.png"), (width, height))
@@ -222,7 +221,7 @@ class Target():
         self.rect.y = self.rect.center[1] - self.height/2
         DISPLAY.blit(self.image, (self.rect.x, self.rect.y))
 
-class Game():
+class Game:
     def __init__(self):
         self.enemies = pygame.sprite.Group()
         self.player = Player()
@@ -323,7 +322,6 @@ class Game():
                     b.change()
                     self.player.bullets.draw(DISPLAY)
 
-
 pygame.init()
 pygame.font.get_init()
 
@@ -336,52 +334,67 @@ DISPLAY = pygame.display.set_mode(WINDOWSIZE)
 CLOCK = pygame.time.Clock()
 pygame.display.set_caption("Grave Fighter")
 
- 
 game = Game()
 database = SQL("Data.db")
 database.get_last_id()
 
-
+game_active = False
 spawn1 = game.enemy_spawner_1()
 spawn2 = game.enemy_spawner_2()
 spawn3 = game.enemy_spawner_3()
 
 BACKGROUND = pygame.transform.scale(pygame.image.load(
             'assets/map.png').convert(), (SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.mouse.set_visible(False)
 
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            game.player.shoot()
-
-    DISPLAY.fill((0, 0, 0))
-    DISPLAY.blit(BACKGROUND,(0,0))
-    game.draw()
-    game.draw_bullets()
-
-    if game.game_over:
-        game.game_over_call()
-        continue
+        if game_active:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                game.player.shoot()
+        else:
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                game_active = True
     
-    next(spawn1)
-    next(spawn2)
-    next(spawn3)
+    if game_active:
+        pygame.mouse.set_visible(False)
+        DISPLAY.fill((0, 0, 0))
+        DISPLAY.blit(BACKGROUND,(0,0))
+        game.draw()
+        game.draw_bullets()
 
-    game.enemy_player_collision()
-    game.check_game_over()
-    game.enemy_player_collision()
+        if game.game_over:
+            game.game_over_call()
+            continue
+        
+        next(spawn1)
+        next(spawn2)
+        next(spawn3)
+
+        game.enemy_player_collision()
+        game.check_game_over()
+        game.enemy_player_collision()
+        
+        for enemy in game.enemies:
+            if pygame.sprite.spritecollide(enemy,game.player.bullets,True):
+                enemy.health -= 1
+                if enemy.health <=0:
+                    database.score+=10
+                    game.enemies.remove(enemy)
+                            
+        database.time = game.display_ui()
+        
+        database.add_to_database()
     
-    for enemy in game.enemies:
-        if pygame.sprite.spritecollide(enemy,game.player.bullets,True):
-            enemy.health -= 1
-            if enemy.health <=0:
-                database.score+=10
-                game.enemies.remove(enemy)
-                         
-    database.time = game.display_ui()
+    else:
+        pygame.mouse.set_visible(True)
+        DISPLAY.fill((94,129,162))
+        DISPLAY.blit(TEXT_FONT.render("WASD to move, mouse to aim, left click to shoot",True,(255,255,255)),(10,10))
+        DISPLAY.blit(TEXT_FONT.render("Slime = 1 Health (1 hit to kill)",True,(255,255,255)),(10,100))
+        DISPLAY.blit(TEXT_FONT.render("Normal skeleton = 2 health (2 hits to kill)",True,(255,255,255)),(10,150))
+        DISPLAY.blit(TEXT_FONT.render("Purple skeleton = 3 health (3 hits to kill)",True,(255,255,255)),(10,200))
+        DISPLAY.blit(TEXT_FONT.render("PRESS SPACE TO START",True,(255,255,255)),(10,500))
     game.update_screen()
-    database.add_to_database()
+    
