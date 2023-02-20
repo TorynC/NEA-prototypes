@@ -123,7 +123,6 @@ class Player(pygame.sprite.Sprite):
         self.move(self.speed)
         DISPLAY.blit(self.image,(self.rect.centerx,self.rect.centery))
 
-
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, x, y,speed):
         super().__init__()
@@ -254,7 +253,7 @@ class Game:
 
     def enemy_spawner_1(self):
         while True:
-            for i in range(60):
+            for i in range(55):
                 yield
             randomx = random.randint(0, 1220)
             randomy = random.randint(20, 670)
@@ -263,7 +262,7 @@ class Game:
             
     def enemy_spawner_2(self):
         while True:
-            for i in range(200):
+            for i in range(150):
                 yield
             randomx = random.randint(0, 1220)
             randomy = random.randint(20, 670)
