@@ -3,30 +3,19 @@ import sys
 import math
 import random
 
-'''class CameraGroup(pygame.sprite.Group):
+class Queue():
     def __init__(self):
-        super().__init__()
-        self.display_surface = pygame.display.get_surface()
-        ground_surf = pygame.transform.scale(pygame.image.load(
-            'assets/map1.png').convert(), (SCREEN_WIDTH, SCREEN_HEIGHT))
-        #self.ground_rect = self.ground_surf.get_rect(topleft=(0, 0))
+        self.queue = []
 
-        self.offset = pygame.math.Vector2()
-        self.half_w = self.display_surface.get_size()[0]//2
-        self.half_h = self.display_surface.get_size()[1]//2
-
-    def custom_draw(self, player):
-        self.offset.x = player.rect.centerx - self.half_w
-        self.offset.y = player.rect.centery - self.half_h
-        ground_offset = self.ground_rect.topleft - self.offset
-        self.display_surface.blit(self.ground_surf, ground_offset)
-        #offset_pos = player.rect.topleft - self.offset
-        self.display_surface.blit(player.image, offset_pos)'''
+    def enqueue(self):
+        pass
+    def dequeue(self):
+        pass
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.health = self.max_health = 4
+        self.health = self.max_health = 3
         self.image = pygame.transform.scale(pygame.image.load(
             "assets/test.png").convert_alpha(), (40, 40))
         self.rect = self.image.get_rect(
@@ -82,14 +71,14 @@ class Player(pygame.sprite.Sprite):
 
         self.rect.centerx += self.direction.x * speed
         self.rect.centery += self.direction.y * speed
-        if self.rect.right >= SCREEN_WIDTH:
-            self.rect.right = SCREEN_WIDTH
+        if self.rect.right >= 1220:
+            self.rect.right = 1220
         if self.rect.left <= 0:
             self.rect.left = 0
-        if self.rect.bottom >= SCREEN_HEIGHT:
-            self.rect.bottom = SCREEN_HEIGHT
-        if self.rect.top <= 0:
-            self.rect.top = 0
+        if self.rect.bottom >= 670:
+            self.rect.bottom = 670
+        if self.rect.top <= 20:
+            self.rect.top = 20
 
     def get_status(self):
 
@@ -128,12 +117,13 @@ class Enemy(pygame.sprite.Sprite):
         self.y = y
         self.health = 4
         self.image = pygame.transform.scale(pygame.image.load(
-            "assets/enemy sprite 2/E2-tile000.png").convert_alpha(), (40, 40))
-        self.rect = self.image.get_rect(center=(self.x, self.y))
+            "assets/enemy sprite 3/slime_animation_0.png").convert_alpha(), (40, 40))
+        
         self.animations = [pygame.transform.scale(pygame.image.load("assets/enemy sprite 3/slime_animation_0.png").convert_alpha(), (40, 40)),
                            pygame.transform.scale(pygame.image.load(
                                "assets/enemy sprite 3/slime_animation_1.png").convert_alpha(), (40, 40)),
                            pygame.transform.scale(pygame.image.load("assets/enemy sprite 3/slime_animation_2.png").convert_alpha(), (40, 40))]
+        self.rect = self.image.get_rect(center=(self.x, self.y))
         self.animationcount = 0
 
     def update(self):
@@ -155,6 +145,33 @@ class Enemy(pygame.sprite.Sprite):
         DISPLAY.blit(self.animations[self.animationcount//4], (self.rect.centerx
                      , self.rect.centery))
 
+class slime(Enemy):
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.transform.scale(pygame.image.load(
+            "assets/enemy sprite 3/slime_animation_0.png").convert_alpha(), (40, 40))
+        self.animations = [pygame.transform.scale(pygame.image.load("assets/enemy sprite 3/slime_animation_0.png").convert_alpha(), (40, 40)),
+                           pygame.transform.scale(pygame.image.load(
+                               "assets/enemy sprite 3/slime_animation_1.png").convert_alpha(), (40, 40)),
+                           pygame.transform.scale(pygame.image.load("assets/enemy sprite 3/slime_animation_2.png").convert_alpha(), (40, 40))]
+
+class skelly1(Enemy):
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.transform.scale(pygame.image.load("assets/enemy sprite 1/tile000.png").convert_alpha(),(40,40))
+        self.animations = [pygame.transform.scale(pygame.image.load("assets/enemy sprite 1/tile000.png").convert_alpha(), (40, 40)),
+                           pygame.transform.scale(pygame.image.load(
+                               "assets/enemy sprite 1/tile001.png").convert_alpha(), (40, 40)),
+                           pygame.transform.scale(pygame.image.load("assets/enemy sprite 1/tile002.png").convert_alpha(), (40, 40))]
+class skelly2(Enemy):
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.transform.scale(pygame.image.load("assets/enemy sprite 2/E2-tile000.png").convert_alpha(),(40,40))
+        self.animations = [pygame.transform.scale(pygame.image.load("assets/enemy sprite 2/E2-tile000.png").convert_alpha(), (40, 40)),
+                           pygame.transform.scale(pygame.image.load(
+                               "assets/enemy sprite 2/E2-tile001.png").convert_alpha(), (40, 40)),
+                           pygame.transform.scale(pygame.image.load("assets/enemy sprite 2/E2-tile002.png").convert_alpha(), (40, 40))]
+
 
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, angle, x, y):
@@ -168,12 +185,11 @@ class Bullet(pygame.sprite.Sprite):
     def change(self):
         self.rect.centery -= int(math.sin(self.angle) * self.speed)
         self.rect.centerx -= int(math.cos(self.angle) * self.speed)
-        # DISPLAY.blit(self.image, (self.rect.x, self.rect.y))
-        if self.rect.y <= -50 or self.rect.y >= MAPBOUND_Y + 50:
-            self.kill()
+        if self.rect.y <= -50 or self.rect.y >= SCREEN_HEIGHT + 50:
+            self.speed = -15
 
-        if self.rect.x <= -50 or self.rect.x >= MAPBOUND_X + 50:
-            self.kill()
+        if self.rect.x <= -50 or self.rect.x >= SCREEN_WIDTH + 50:
+            self.speed = -15
 
 
 class Target():
@@ -225,19 +241,11 @@ class Game():
         while True:
             for i in range(60):
                 yield
-            randomx = random.randint(500, 1000)
-            randomy = random.randint(500, 1000)
+            randomx = random.randint(0, 1220)
+            randomy = random.randint(20, 670)
             enemy = Enemy(randomx, randomy)
             self.enemies.add(enemy)
-            # player.enemies.add(enemy)
-
-    def gameover(self):
-        pygame.mouse.set_visible(True)
-        score_text = TEXT_FONT.render(f'Final Score: {score}', True, (255,255,255))
-        DISPLAY.blit(score_text,(500,500))
-        time_text = TEXT_FONT.render(f'Final Time: {time} Seconds', True, (255,255,255))
-        DISPLAY.blit(time_text,(500,400))
-        self.update_screen()
+        
     
     def draw(self):
         self.target.update()
@@ -255,8 +263,6 @@ WINDOWSIZE = (SCREEN_WIDTH, SCREEN_HEIGHT)
 DISPLAY = pygame.display.set_mode(WINDOWSIZE)
 CLOCK = pygame.time.Clock()
 pygame.display.set_caption("Grave Fighter")
-MAPBOUND_X = 1800
-MAPBOUND_Y = 1200
 
 score = 0
 
@@ -268,7 +274,7 @@ score = 0
 spawn = game.enemy_spawner()
 collision_tolerance = 10
 background = pygame.transform.scale(pygame.image.load(
-            'assets/map1.png').convert(), (SCREEN_WIDTH, SCREEN_HEIGHT))
+            'assets/map.png').convert(), (SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.mouse.set_visible(False)
 while True:
     for event in pygame.event.get():
@@ -282,7 +288,14 @@ while True:
     DISPLAY.blit(background,(0,0))
     game.draw()
     if game_over:
-        game.gameover()
+        pygame.mouse.set_visible(True)
+        score_text = TEXT_FONT.render(f'Final Score: {score}', True, (255,255,255))
+        DISPLAY.fill((0,0,0))
+        DISPLAY.blit(score_text,(450,300))
+
+        time_text = TEXT_FONT.render(f'Final Time: {time} Seconds', True, (255,255,255))
+        DISPLAY.blit(time_text,(450,400))
+        game.update_screen()
         continue
 
     next(spawn)
@@ -318,8 +331,11 @@ while True:
     
     for enemy in game.enemies:
         if pygame.sprite.spritecollide(enemy,game.player.bullets,True):
-            score+=10
-            game.enemies.remove(enemy)
+            
+            enemy.health -= 1
+            if enemy.health <=0:
+                score+=10
+                game.enemies.remove(enemy)
                          
     time = game.display_ui()
     game.update_screen()
