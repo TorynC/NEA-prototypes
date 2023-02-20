@@ -239,10 +239,10 @@ class Game:
         score_text = TEXT_FONT.render(f'Score: {database.score}', True, (255, 255, 255))
         DISPLAY.blit(score_text, (score_text.get_width()/2, 25))
 
-        start_time = (pygame.time.get_ticks()//1000)
-        time_text = TEXT_FONT.render(f'Time: {start_time}', True, (255, 255, 255))
+        time = (pygame.time.get_ticks()//1000) - start_time
+        time_text = TEXT_FONT.render(f'Time: {time}', True, (255, 255, 255))
         DISPLAY.blit(time_text, (1000, 25))
-        return start_time
+        return time
 
     def shoot(self):
         print("shoot")
@@ -357,6 +357,7 @@ while True:
         else:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 game_active = True
+                start_time = int(pygame.time.get_ticks()//1000)
     
     if game_active:
         pygame.mouse.set_visible(False)
