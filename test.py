@@ -5,12 +5,12 @@ import random
 import sqlite3
 
 class SQL:
-    def __init__(self,database,score,time):
+    def __init__(self,database):
         self.database = database
         self.conn = sqlite3.connect(self.database)
         self.cur = self.conn.cursor()
-        self.score = score
-        self.time =time
+        self.score = 0
+        self.time = 0
         self.id = self.cur.execute("SELECT AttemptID FROM LoggedIn").fetchall()
         self.all_id = []
 
@@ -237,7 +237,7 @@ class Game():
             img = pygame.transform.scale(img, (50, 50))
             DISPLAY.blit(img, (i*50+WINDOWSIZE[0]/2-self.player.max_health*25, 25))
 
-        score_text = TEXT_FONT.render(f'Score: {score}', True, (255, 255, 255))
+        score_text = TEXT_FONT.render(f'Score: {database.score}', True, (255, 255, 255))
         DISPLAY.blit(score_text, (score_text.get_width()/2, 25))
 
         start_time = (pygame.time.get_ticks()//1000)
@@ -264,7 +264,7 @@ class Game():
             
     def enemy_spawner_2(self):
         while True:
-            for i in range(120):
+            for i in range(200):
                 yield
             randomx = random.randint(0, 1220)
             randomy = random.randint(20, 670)
@@ -287,11 +287,11 @@ class Game():
 
     def game_over_call(self):
         pygame.mouse.set_visible(True)
-        score_text = TEXT_FONT.render(f'Final Score: {score}', True, (255,255,255))
+        score_text = TEXT_FONT.render(f'Final Score: {database.score}', True, (255,255,255))
         DISPLAY.fill((0,0,0))
         DISPLAY.blit(score_text,(450,300))
 
-        time_text = TEXT_FONT.render(f'Final Time: {time} Seconds', True, (255,255,255))
+        time_text = TEXT_FONT.render(f'Final Time: {database.time} Seconds', True, (255,255,255))
         DISPLAY.blit(time_text,(450,400))
         self.update_screen()
 
@@ -335,12 +335,12 @@ WINDOWSIZE = (SCREEN_WIDTH, SCREEN_HEIGHT)
 DISPLAY = pygame.display.set_mode(WINDOWSIZE)
 CLOCK = pygame.time.Clock()
 pygame.display.set_caption("Grave Fighter")
-time = 0
-score = 0 
+
+ 
 game = Game()
-database = SQL("Data.db",time,score)
+database = SQL("Data.db")
 database.get_last_id()
-database.add_to_database()
+
 
 spawn1 = game.enemy_spawner_1()
 spawn2 = game.enemy_spawner_2()
@@ -379,8 +379,9 @@ while True:
         if pygame.sprite.spritecollide(enemy,game.player.bullets,True):
             enemy.health -= 1
             if enemy.health <=0:
-                score+=10
+                database.score+=10
                 game.enemies.remove(enemy)
                          
-    time = game.display_ui()
+    database.time = game.display_ui()
     game.update_screen()
+    database.add_to_database()
