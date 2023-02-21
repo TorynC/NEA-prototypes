@@ -3,9 +3,9 @@ from tkinter import *
 
 #setup database connection and create table
 class SQL:
-    def __init__(self,database):
-        self.database = database
-        self.connection = sqlite3.connect(self.database)
+    def __init__(self,filename):
+        self.filename = filename
+        self.connection = sqlite3.connect(self.filename)
         self.cursor = self.connection.cursor()
 
     def create_tables(self):
@@ -31,10 +31,11 @@ class SQL:
 
 #master parameter means main window
 class Main:
-    def __init__(self,master):
+    def __init__(self,master,database):
         self.master=master
         self.master.title("Grave Fighter")
         self.master.geometry("600x600")
+        self.database = database
 
         #for textvariable
         self.username=StringVar()
@@ -100,27 +101,27 @@ class Main:
 
     def newacc(self):
         find_user = ("SELECT Username FROM CustomerDetails WHERE Username = ? ")
-        database.cursor.execute(find_user,[(self.new_username.get())])
+        self.database.cursor.execute(find_user,[(self.new_username.get())])
         self.message = Label(self.register_frame)
         self.message.grid(row=14,column=1)
-        if database.cursor.fetchall():
+        if self.database.cursor.fetchall():
             self.message.config(text="Username taken, Try a different one.")
         elif self.new_username.get() == "" or self.new_password.get() == "" or self.new_tutorgroup.get() == "":
             self.message.config(text = "         Cannot have empty entry        ")
         else:
             self.message.config(text="                 Account Created!                   ")
             insert = 'INSERT INTO CustomerDetails(Username,Password,TutorGroup) VALUES(?,?,?)'
-            database.cursor.execute(insert,[(self.new_username.get()),(self.new_password.get()),(self.new_tutorgroup.get())])
-            database.connection.commit()
+            self.database.cursor.execute(insert,[(self.new_username.get()),(self.new_password.get()),(self.new_tutorgroup.get())])
+            self.database.connection.commit()
 
     def oldacc(self):
         
-        database.cursor.execute("SELECT * FROM CustomerDetails WHERE Username = ? AND Password = ? AND TutorGroup=?",(self.username.get(),self.password.get(),self.tutorgroup.get()))
-        row = database.cursor.fetchall()
-        database.connection.commit()
+        self.database.cursor.execute("SELECT * FROM CustomerDetails WHERE Username = ? AND Password = ? AND TutorGroup=?",(self.username.get(),self.password.get(),self.tutorgroup.get()))
+        row = self.database.cursor.fetchall()
+        self.database.connection.commit()
         if row !=[]:
-            database.cursor.execute('INSERT INTO LoggedIn(Username,Password,TutorGroup) VALUES(?,?,?)',[self.username.get(),self.password.get(),self.tutorgroup.get()])
-            database.connection.commit()
+            self.database.cursor.execute('INSERT INTO LoggedIn(Username,Password,TutorGroup) VALUES(?,?,?)',[self.username.get(),self.password.get(),self.tutorgroup.get()])
+            self.database.connection.commit()
             window1.destroy()
             import game
 
@@ -130,8 +131,8 @@ class Main:
     def quit(self):
         window1.destroy()
 
-database = SQL("Data.db")
-database.create_tables()
+databaseobject = SQL("Data.db")
+databaseobject.create_tables()
 window1 = Tk()
-b = Main(window1)
+main = Main(window1,databaseobject)
 window1.mainloop()

@@ -376,7 +376,7 @@ while True:
         if game.game_over:
             game.game_over_call()
             import leaderboardtimes
-            
+
             continue
         
         next(spawn1)
