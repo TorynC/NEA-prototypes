@@ -42,7 +42,12 @@ class SQL:
         print("Total playtime from all players:",time[0],"seconds")
         print("=------------------------------------------------------=") 
 
+    def check_empty(self):
+        self.cursor.execute("DELETE FROM LoggedIn WHERE Score IS NULL")
+        self.connection.commit()
+
 database = SQL("Data.db")
+database.check_empty()
 database.get_high_scores()
 database.get_times()
 database.update_times()
