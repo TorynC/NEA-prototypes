@@ -4,6 +4,8 @@ import math
 import random
 import sqlite3
 
+#make parent class for target and bullet to have polymorphism, abstract method, inheritance 
+
 class SQL:
     def __init__(self,database):
         self.database = database
