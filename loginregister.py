@@ -102,6 +102,8 @@ class Main:
         self.message.grid(row=14,column=1)
         if cursor1.fetchall():
             self.message.config(text="Username taken, Try a different one.")
+        elif self.new_username.get() == "" or self.new_password.get() == "" or self.new_tutorgroup.get() == "":
+            self.message.config(text = "Cannot have empty entry")
         else:
             self.message.config(text="                 Account Created!                   ")
             insert = 'INSERT INTO CustomerDetails(Username,Password,TutorGroup) VALUES(?,?,?)'
