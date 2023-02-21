@@ -350,9 +350,12 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
+            
         if game_active:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 game.player.shoot()
+
+        
         else:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 game_active = True
@@ -367,6 +370,7 @@ while True:
 
         if game.game_over:
             game.game_over_call()
+            import leaderboardtimes
             continue
         
         next(spawn1)
