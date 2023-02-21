@@ -11,7 +11,8 @@ Password TEXT NOT NULL,
 TutorGroup TEXT); 
 """)
 cursor.execute(""" CREATE TABLE IF NOT EXISTS TotalTimes(
-Time integer PRIMARY KEY);
+ID PRIMARY KEY,
+Time INTEGER);
 """)
 cursor.execute(""" CREATE TABLE IF NOT EXISTS 
 LoggedIn(AttemptID integer PRIMARY KEY,
@@ -103,7 +104,7 @@ class Main:
         if cursor1.fetchall():
             self.message.config(text="Username taken, Try a different one.")
         elif self.new_username.get() == "" or self.new_password.get() == "" or self.new_tutorgroup.get() == "":
-            self.message.config(text = "Cannot have empty entry")
+            self.message.config(text = "         Cannot have empty entry        ")
         else:
             self.message.config(text="                 Account Created!                   ")
             insert = 'INSERT INTO CustomerDetails(Username,Password,TutorGroup) VALUES(?,?,?)'
@@ -120,7 +121,7 @@ class Main:
             cursor2.execute('INSERT INTO LoggedIn(Username,Password,TutorGroup) VALUES(?,?,?)',[self.username.get(),self.password.get(),self.tutorgroup.get()])
             db.commit()
             window1.destroy()
-            import test
+            import game
 
         else:
             self.message2 = Label(self.login_frame,text="User not found.").grid(row=8,column=1)
