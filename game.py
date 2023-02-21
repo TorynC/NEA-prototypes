@@ -4,23 +4,26 @@ import math
 import random
 import sqlite3
 
-#make parent class for target and bullet to have polymorphism, abstract method, inheritance 
+#make parent class for target and bullet to have polymorphism, abstract method, inheritance
+#make comments 
+#make purple skeleton shoot player
+#make tutor group entry stricter (defensive programming)
 
 class SQL:
     def __init__(self,database):
         self.database = database
-        self.conn = sqlite3.connect(self.database)
-        self.cur = self.conn.cursor()
+        self.connection = sqlite3.connect(self.database)
+        self.cursor = self.connection.cursor()
         self.score = 0
         self.time = 0
-        self.id = self.cur.execute("SELECT AttemptID FROM LoggedIn").fetchall()
+        self.id = self.cursor.execute("SELECT AttemptID FROM LoggedIn").fetchall()
         self.all_id = []
 
     def add_to_database(self):
-        update_query = """UPDATE LoggedIn SET Score = ? , Time = ? WHERE AttemptID = ?"""
+        update_query = "UPDATE LoggedIn SET Score = ? , Time = ? WHERE AttemptID = ?"
         data = (self.score,self.time,self.id)
-        self.cur.execute(update_query,data)
-        self.conn.commit()
+        self.cursor.execute(update_query,data)
+        self.connection.commit()
         
     def get_last_id(self):
         for id in self.id:
@@ -373,6 +376,7 @@ while True:
         if game.game_over:
             game.game_over_call()
             import leaderboardtimes
+            
             continue
         
         next(spawn1)

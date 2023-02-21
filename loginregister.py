@@ -2,28 +2,32 @@ import sqlite3
 from tkinter import *
 
 #setup database connection and create table
-with sqlite3.connect("Data.db") as db:
-    cursor = db.cursor()
-cursor.execute(""" CREATE TABLE IF NOT EXISTS CustomerDetails(
-UserID integer PRIMARY KEY, 
-Username TEXT NOT NULL,
-Password TEXT NOT NULL,
-TutorGroup TEXT); 
-""")
-cursor.execute(""" CREATE TABLE IF NOT EXISTS TotalTimes(
-ID integer PRIMARY KEY,
-Time INTEGER);
-""")
-cursor.execute(""" CREATE TABLE IF NOT EXISTS 
-LoggedIn(AttemptID integer PRIMARY KEY,
-Username TEXT NOT NULL,
-Password TEXT NOT NULL,
-TutorGroup TEXT,
-Score INTEGER,
-Time INTEGER);
-""")
-db.commit()
-db.close()
+class SQL:
+    def __init__(self,database):
+        self.database = database
+        self.connection = sqlite3.connect(self.database)
+        self.cursor = self.connection.cursor()
+
+    def create_tables(self):
+        self.cursor.execute(""" CREATE TABLE IF NOT EXISTS CustomerDetails(
+                                UserID integer PRIMARY KEY, 
+                                Username TEXT NOT NULL,
+                                Password TEXT NOT NULL,
+                                TutorGroup TEXT); 
+                                """)
+        self.cursor.execute(""" CREATE TABLE IF NOT EXISTS TotalTimes(
+                                ID integer PRIMARY KEY,
+                                Time INTEGER);
+                                """)
+        self.cursor.execute(""" CREATE TABLE IF NOT EXISTS 
+                                LoggedIn(AttemptID integer PRIMARY KEY,
+                                Username TEXT NOT NULL,
+                                Password TEXT NOT NULL,
+                                TutorGroup TEXT,
+                                Score INTEGER,
+                                Time INTEGER);
+                                """)
+        self.connection.commit()
 
 #master parameter means main window
 class Main:
@@ -46,7 +50,7 @@ class Main:
         for i in self.master.winfo_children():
             i.destroy()
         self.frame = Frame(self.master)
-        self.title = Label(self.master,text = "Main Menu",font=('',50))
+        self.title = Label(self.master,text = "Grave Fighter",font=('',50))
         self.title.pack(pady=10)
         self.button1 = Button(self.frame,text = "Login",font=("",20),command=self.login)
         self.button2 = Button(self.frame,text = "Create New Account",font=("",20),command=self.create_acc)
@@ -95,31 +99,28 @@ class Main:
         self.login2butt = Button(self.login_frame,text = "Login",command = self.oldacc).grid(row=6,column=1)
 
     def newacc(self):
-        with sqlite3.connect("Data.db") as db:
-            cursor1 = db.cursor()
         find_user = ("SELECT Username FROM CustomerDetails WHERE Username = ? ")
-        cursor1.execute(find_user,[(self.new_username.get())])
+        database.cursor.execute(find_user,[(self.new_username.get())])
         self.message = Label(self.register_frame)
         self.message.grid(row=14,column=1)
-        if cursor1.fetchall():
+        if database.cursor.fetchall():
             self.message.config(text="Username taken, Try a different one.")
         elif self.new_username.get() == "" or self.new_password.get() == "" or self.new_tutorgroup.get() == "":
             self.message.config(text = "         Cannot have empty entry        ")
         else:
             self.message.config(text="                 Account Created!                   ")
             insert = 'INSERT INTO CustomerDetails(Username,Password,TutorGroup) VALUES(?,?,?)'
-            cursor1.execute(insert,[(self.new_username.get()),(self.new_password.get()),(self.new_tutorgroup.get())])
-            db.commit()
+            database.cursor.execute(insert,[(self.new_username.get()),(self.new_password.get()),(self.new_tutorgroup.get())])
+            database.connection.commit()
 
     def oldacc(self):
-        with sqlite3.connect("Data.db") as db:
-            cursor2 = db.cursor()
-            cursor2.execute("SELECT * FROM CustomerDetails WHERE Username = ? AND Password = ? AND TutorGroup=?",(self.username.get(),self.password.get(),self.tutorgroup.get()))
-            row = cursor2.fetchall()
-            db.commit()
+        
+        database.cursor.execute("SELECT * FROM CustomerDetails WHERE Username = ? AND Password = ? AND TutorGroup=?",(self.username.get(),self.password.get(),self.tutorgroup.get()))
+        row = database.cursor.fetchall()
+        database.connection.commit()
         if row !=[]:
-            cursor2.execute('INSERT INTO LoggedIn(Username,Password,TutorGroup) VALUES(?,?,?)',[self.username.get(),self.password.get(),self.tutorgroup.get()])
-            db.commit()
+            database.cursor.execute('INSERT INTO LoggedIn(Username,Password,TutorGroup) VALUES(?,?,?)',[self.username.get(),self.password.get(),self.tutorgroup.get()])
+            database.connection.commit()
             window1.destroy()
             import game
 
@@ -129,6 +130,8 @@ class Main:
     def quit(self):
         window1.destroy()
 
+database = SQL("Data.db")
+database.create_tables()
 window1 = Tk()
 b = Main(window1)
 window1.mainloop()
