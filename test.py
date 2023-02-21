@@ -4,6 +4,15 @@ import math
 import random
 import sqlite3
 
+class Queue:
+    def __init__(self):
+        self.queue = []
+        self.queue_length = 3
+
+    def add(self,enemy):
+        self.queue.append(enemy)
+    
+
 
 class SQL:
     def __init__(self,database):

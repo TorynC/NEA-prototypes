@@ -11,7 +11,7 @@ Password TEXT NOT NULL,
 TutorGroup TEXT); 
 """)
 cursor.execute(""" CREATE TABLE IF NOT EXISTS TotalTimes(
-ID PRIMARY KEY,
+ID integer PRIMARY KEY,
 Time INTEGER);
 """)
 cursor.execute(""" CREATE TABLE IF NOT EXISTS 

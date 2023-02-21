@@ -13,31 +13,31 @@ class SQL:
         count = 0
         self.scores_times.sort(key = lambda x:x[2],reverse = True)
         if len(self.scores_times)>=5:
-            print("=-------------------------------------------------=")        
+            print("=------------------------------------------------------=")         
             print("Leaderboard (Username, TutorGroup, Score, Survival time)")
             for item in self.scores_times[0:5]:
                 count += 1
                 print((number+count),item)
-            print("=-------------------------------------------------=")    
+            print("=------------------------------------------------------=")     
         else:
-            print("=-------------------------------------------------=")      
+            print("=------------------------------------------------------=")      
             print("Leaderboard (Username, TutorGroup, Score, Survival time)")
             for item in self.scores_times[0:len(self.scores_times)]:
                 count += 1
                 print((number+count),item)
-            print("=-------------------------------------------------=")      
+            print("=------------------------------------------------------=")     
 
-    '''def get_times(self):
+    def get_times(self):
         for time in self.scores_times:
-            self.times += int(time[1])
+            self.times += int(time[3])
         print(self.times)
 
     def update_times(self):
         data = self.times
-        self.cur.execute("INSERT INTO TotalTimes(Time) VALUES(?)",8)
-        self.conn.commit()'''
+        self.cur.execute("INSERT INTO TotalTimes(Time) VALUES(?)",(data,))
+        self.conn.commit()
 
 database = SQL("Data.db")
 database.get_high_scores()
-#database.get_times()
-#database.update_times()
+database.get_times()
+database.update_times()
