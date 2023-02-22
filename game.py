@@ -4,7 +4,6 @@ import math
 import random
 import sqlite3
 
-#make parent class for target and bullet to have polymorphism, abstract method, inheritance
 #make comments 
 #make purple skeleton shoot player
 #make tutor group entry stricter (defensive programming)
@@ -190,13 +189,30 @@ class Skelly2(Enemy):
                            pygame.transform.scale(pygame.image.load("assets/enemy sprite 2/E2-tile002.png").convert_alpha(), (40, 40))]
         self.health = 3
         self.rect = self.image.get_rect(center=(self.x, self.y))
+        self.lasers = pygame.sprite.Group()
+        self.ready = True
+
+    
+    def update(self): #overriding 
+        if self.animationcount + 1 == 12:
+            self.animationcount = 0
+        self.animationcount += 1
+        
+        DISPLAY.blit(self.animations[self.animationcount//4], (self.rect.centerx
+                     , self.rect.centery))
+        self.lasers.add(Enemy_laser(self.rect.centerx,self.rect.centery))
+        for laser in self.lasers:
+            laser.update()
+            self.lasers.draw(DISPLAY)   
 
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, angle, x, y):
         super().__init__()
+        self.x = x
+        self.y = y
         self.image = pygame.transform.scale(pygame.image.load(
             "assets/bullet.png").convert_alpha(), (16, 16))
-        self.rect = self.image.get_rect(center=(x, y))
+        self.rect = self.image.get_rect(center=(self.x, self.y))
         self.angle = angle
         self.speed = 15
 
@@ -225,6 +241,27 @@ class Target:
         self.rect.y = self.rect.center[1] - self.height/2
         DISPLAY.blit(self.image, (self.rect.x, self.rect.y))
 
+class Enemy_laser(pygame.sprite.Sprite):
+    def __init__(self,x,y):
+        super().__init__()
+        self.x = x
+        self.y = y
+        self.image = pygame.Surface((4,20))
+        self.image.fill((255,0,0))
+        self.rect = self.image.get_rect(center = (self.x,self.y))
+        self.speed = 5
+        self.angle = math.atan2(
+            (self.rect.centery-game.player.rect.centery), (self.rect.centerx-game.player.rect.centerx))
+    
+    def move(self):
+        self.rect.centery -= math.cos(self.angle) * self.speed
+        self.rect.centerx -= math.sin(self.angle) * self.speed
+
+
+    def update(self):
+        self.move()
+        
+
 class Game:
     def __init__(self):
         self.enemies = pygame.sprite.Group()
@@ -249,7 +286,6 @@ class Game:
         return time
 
     def shoot(self):
-        print("shoot")
         self.player.shoot()
 
     def update_screen(self):
@@ -258,11 +294,11 @@ class Game:
 
     def enemy_spawner_1(self):
         while True:
-            for i in range(55):
+            for i in range(50):
                 yield
             randomx = random.randint(0, 1220)
             randomy = random.randint(20, 670)
-            enemy = Slime(randomx, randomy,2)
+            enemy = Slime(randomx, randomy,1)
             self.enemies.add(enemy)
             
     def enemy_spawner_2(self):
@@ -276,12 +312,13 @@ class Game:
 
     def enemy_spawner_3(self):
         while True:
-            for i in range(360):
+            for i in range(130):
                 yield
-            randomx = random.randint(0, 1220)
-            randomy = random.randint(20, 670)
-            enemy3 = Skelly2(randomx,randomy,3)
+            randomx = random.randint(300, 900)
+            randomy = random.randint(100, 500)
+            enemy3 = Skelly2(randomx,randomy,0)
             self.enemies.add(enemy3)
+            
 
     def draw(self):
         self.target.update()
@@ -326,6 +363,15 @@ class Game:
                     b.change()
                     self.player.bullets.draw(DISPLAY)
 
+    def collision_enemy(self):
+        for enemy in self.enemies:
+            if pygame.sprite.spritecollide(enemy,self.player.bullets,True):
+                enemy.health -= 1
+                if enemy.health <=0:
+                    database.score+=10
+                    self.enemies.remove(enemy)
+        
+
 pygame.init()
 pygame.font.get_init()
 
@@ -360,7 +406,6 @@ while True:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 game.player.shoot()
 
-        
         else:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 game_active = True
@@ -376,24 +421,18 @@ while True:
         if game.game_over:
             game.game_over_call()
             import leaderboardtimes
-
             continue
         
         next(spawn1)
         next(spawn2)
         next(spawn3)
+        
 
         game.enemy_player_collision()
         game.check_game_over()
         game.enemy_player_collision()
         
-        for enemy in game.enemies:
-            if pygame.sprite.spritecollide(enemy,game.player.bullets,True):
-                enemy.health -= 1
-                if enemy.health <=0:
-                    database.score+=10
-                    game.enemies.remove(enemy)
-                            
+        game.collision_enemy()
         database.time = game.display_ui()
         
         database.add_to_database()
