@@ -191,7 +191,8 @@ class Skelly2(Enemy):
         self.rect = self.image.get_rect(center=(self.x, self.y))
         self.lasers = pygame.sprite.Group()
         self.ready = True
-
+        self.cooldown = 1500
+        self.attack_time = 0
     
     def update(self): #overriding 
         if self.animationcount + 1 == 12:
@@ -200,11 +201,32 @@ class Skelly2(Enemy):
         
         DISPLAY.blit(self.animations[self.animationcount//4], (self.rect.centerx
                      , self.rect.centery))
-        self.lasers.add(Enemy_laser(self.rect.centerx,self.rect.centery))
+        self.attack()
+        self.recharge()
+        self.laser_collision()
         for laser in self.lasers:
-            laser.update()
-            self.lasers.draw(DISPLAY)   
+                laser.update()
+                self.lasers.draw(DISPLAY) 
+        
+    def recharge(self):
+        if not self.ready:
+            current_time = pygame.time.get_ticks()
+            if current_time -self.attack_time >= self.cooldown:
+                self.ready = True
 
+    def attack(self):
+        if self.ready:
+            self.lasers.add(Enemy_laser(self.rect.centerx,self.rect.centery))
+            self.ready = False
+            self.attack_time = pygame.time.get_ticks()
+
+    def laser_collision(self):
+        for laser in self.lasers:
+            if pygame.sprite.spritecollide(game.player,self.lasers,True):
+                game.player.health-=1
+                self.lasers.remove(laser)
+
+    
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, angle, x, y):
         super().__init__()
@@ -246,22 +268,21 @@ class Enemy_laser(pygame.sprite.Sprite):
         super().__init__()
         self.x = x
         self.y = y
-        self.image = pygame.Surface((4,20))
-        self.image.fill((255,0,0))
+        self.image = pygame.Surface((8,8))
+        self.image.fill((0,0,255))
         self.rect = self.image.get_rect(center = (self.x,self.y))
         self.speed = 5
+        self.current_player = game.player.rect.center
         self.angle = math.atan2(
-            (self.rect.centery-game.player.rect.centery), (self.rect.centerx-game.player.rect.centerx))
+            (self.current_player[1]-self.rect.centery), (self.current_player[0]-self.rect.centerx))
     
     def move(self):
         self.rect.centery -= math.cos(self.angle) * self.speed
         self.rect.centerx -= math.sin(self.angle) * self.speed
 
-
     def update(self):
         self.move()
         
-
 class Game:
     def __init__(self):
         self.enemies = pygame.sprite.Group()
@@ -312,7 +333,7 @@ class Game:
 
     def enemy_spawner_3(self):
         while True:
-            for i in range(130):
+            for i in range(60):
                 yield
             randomx = random.randint(300, 900)
             randomy = random.randint(100, 500)
@@ -370,7 +391,6 @@ class Game:
                 if enemy.health <=0:
                     database.score+=10
                     self.enemies.remove(enemy)
-        
 
 pygame.init()
 pygame.font.get_init()
