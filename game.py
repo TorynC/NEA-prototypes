@@ -5,8 +5,6 @@ import random
 import sqlite3
 
 #make comments 
-#make purple skeleton shoot player
-#make tutor group entry stricter (defensive programming)
 
 class SQL:
     def __init__(self,database):
@@ -205,7 +203,7 @@ class Skelly2(Enemy):
         self.recharge()
         self.laser_collision()
         for laser in self.lasers:
-                laser.update()
+                laser.move()
                 self.lasers.draw(DISPLAY) 
         
     def recharge(self):
@@ -279,9 +277,6 @@ class Enemy_laser(pygame.sprite.Sprite):
     def move(self):
         self.rect.centery -= math.cos(self.angle) * self.speed
         self.rect.centerx -= math.sin(self.angle) * self.speed
-
-    def update(self):
-        self.move()
         
 class Game:
     def __init__(self):

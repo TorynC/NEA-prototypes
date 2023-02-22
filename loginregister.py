@@ -108,6 +108,8 @@ class Main:
             self.message.config(text="Username taken, Try a different one.")
         elif self.new_username.get() == "" or self.new_password.get() == "" or self.new_tutorgroup.get() == "":
             self.message.config(text = "         Cannot have empty entry        ")
+        elif len(self.new_tutorgroup.get()) >3:
+            self.message.config(text = "               Invalid Tutor group                 ")      
         else:
             self.message.config(text="                 Account Created!                   ")
             insert = 'INSERT INTO CustomerDetails(Username,Password,TutorGroup) VALUES(?,?,?)'
