@@ -1,7 +1,7 @@
 import sqlite3
 from tkinter import *
 
-#setup database connection and create table
+#class used to instantiate database object 
 class SQL:
     def __init__(self,filename):
         self.filename = filename
@@ -27,13 +27,14 @@ class SQL:
                                 Score INTEGER,
                                 Time INTEGER);
                                 """)
-        self.connection.commit()
+        #method used to create tables in database 
+        self.connection.commit() #commit changes to database 
 
 #master parameter means main window
 class Main:
     def __init__(self,master,database):
         self.master=master
-        self.master.title("Grave Fighter")
+        self.master.title("Desert Dungeons")
         self.master.geometry("600x600")
         self.database = database
 
@@ -45,13 +46,13 @@ class Main:
         self.new_password = StringVar()
         self.new_tutorgroup = StringVar()
 
-        self.menu_widgets()
+        self.menu_widgets() #calling menu_widget method
 
-    def menu_widgets(self):
+    def menu_widgets(self): #method for creating buttons and layout of the main menu page 
         for i in self.master.winfo_children():
             i.destroy()
         self.frame = Frame(self.master)
-        self.title = Label(self.master,text = "Grave Fighter",font=('',50))
+        self.title = Label(self.master,text = "Desert Dungeons",font=('',50))
         self.title.pack(pady=10)
         self.button1 = Button(self.frame,text = "Login",font=("",20),command=self.login)
         self.button2 = Button(self.frame,text = "Create New Account",font=("",20),command=self.create_acc)
@@ -61,7 +62,7 @@ class Main:
         self.button2.pack(padx=10,pady=20)
         self.button3.pack(padx=10,pady=25)
 
-    def create_acc(self):
+    def create_acc(self): #method for creating new account page 
         for i in self.master.winfo_children():
             i.destroy()
 
@@ -81,7 +82,7 @@ class Main:
         self.loginbutt = Button(self.register_frame,text="Login Page",command=self.login).grid(row=12,column=1)
         self.menubutt = Button(self.register_frame,text="Back to Main Menu",command=self.menu_widgets).grid(row=13,column=1)
 
-    def login(self):
+    def login(self): #method for creating login page 
         for i in self.master.winfo_children():
             i.destroy()
         self.username.set('')
@@ -99,13 +100,13 @@ class Main:
         self.menu2butt = Button(self.login_frame,text = "Back to Main Menu",command = self.menu_widgets).grid(row=7,column=1)
         self.login2butt = Button(self.login_frame,text = "Login",command = self.oldacc).grid(row=6,column=1)
 
-    def newacc(self):
+    def newacc(self): #method for when user creates a new account 
         find_user = ("SELECT Username FROM CustomerDetails WHERE Username = ? ")
         self.database.cursor.execute(find_user,[(self.new_username.get())])
         self.message = Label(self.register_frame)
         self.message.grid(row=14,column=1)
         if self.database.cursor.fetchall():
-            self.message.config(text="Username taken, Try a different one.")
+            self.message.config(text="Username taken, Try a different one.") 
         elif self.new_username.get() == "" or self.new_password.get() == "" or self.new_tutorgroup.get() == "":
             self.message.config(text = "         Cannot have empty entry        ")
         elif len(self.new_tutorgroup.get()) >3:
@@ -115,8 +116,12 @@ class Main:
             insert = 'INSERT INTO CustomerDetails(Username,Password,TutorGroup) VALUES(?,?,?)'
             self.database.cursor.execute(insert,[(self.new_username.get()),(self.new_password.get()),(self.new_tutorgroup.get())])
             self.database.connection.commit()
+        #if statements for defensive programming
+        #when user enters an existing username an error message will be displayed
+        #when user leaves any empty entires an error message will be displayed
+        #when user enters a string that is greater than 3 characters for the tutorgroup entry an error message will be displayed 
 
-    def oldacc(self):
+    def oldacc(self): #method for when player logs in and details match data fetched from database 
         
         self.database.cursor.execute("SELECT * FROM CustomerDetails WHERE Username = ? AND Password = ? AND TutorGroup=?",(self.username.get(),self.password.get(),self.tutorgroup.get()))
         row = self.database.cursor.fetchall()
@@ -129,12 +134,13 @@ class Main:
 
         else:
             self.message2 = Label(self.login_frame,text="User not found.").grid(row=8,column=1)
+            #when any details don't match the data in the database error message will be displayed 
 
     def quit(self):
         window1.destroy()
 
-databaseobject = SQL("Data.db")
+databaseobject = SQL("Data.db") #database object created
 databaseobject.create_tables()
-window1 = Tk()
-main = Main(window1,databaseobject)
+window1 = Tk() #creating main window object from tkinter class
+main = Main(window1,databaseobject)  #main object with database object aggregated inside 
 window1.mainloop()

@@ -4,31 +4,23 @@ import math
 import random
 import sqlite3
 
-class Queue:
-    def __init__(self):
-        self.queue = []
-        self.queue_length = 3
-
-    def add(self,enemy):
-        self.queue.append(enemy)
-    
-
-
+#make comments 
+game_active = False
 class SQL:
     def __init__(self,database):
         self.database = database
-        self.conn = sqlite3.connect(self.database)
-        self.cur = self.conn.cursor()
+        self.connection = sqlite3.connect(self.database)
+        self.cursor = self.connection.cursor()
         self.score = 0
         self.time = 0
-        self.id = self.cur.execute("SELECT AttemptID FROM LoggedIn").fetchall()
+        self.id = self.cursor.execute("SELECT AttemptID FROM LoggedIn").fetchall()
         self.all_id = []
 
     def add_to_database(self):
-        update_query = """UPDATE LoggedIn SET Score = ? , Time = ? WHERE AttemptID = ?"""
+        update_query = "UPDATE LoggedIn SET Score = ? , Time = ? WHERE AttemptID = ?"
         data = (self.score,self.time,self.id)
-        self.cur.execute(update_query,data)
-        self.conn.commit()
+        self.cursor.execute(update_query,data)
+        self.connection.commit()
         
     def get_last_id(self):
         for id in self.id:
@@ -195,13 +187,52 @@ class Skelly2(Enemy):
                            pygame.transform.scale(pygame.image.load("assets/enemy sprite 2/E2-tile002.png").convert_alpha(), (40, 40))]
         self.health = 3
         self.rect = self.image.get_rect(center=(self.x, self.y))
+        self.lasers = pygame.sprite.Group()
+        self.ready = True
+        self.cooldown = 1500
+        self.attack_time = 0
+    
+    def update(self): #overriding 
+        if self.animationcount + 1 == 12:
+            self.animationcount = 0
+        self.animationcount += 1
+        
+        DISPLAY.blit(self.animations[self.animationcount//4], (self.rect.centerx
+                     , self.rect.centery))
+        self.attack()
+        self.recharge()
+        self.laser_collision()
+        for laser in self.lasers:
+                laser.move()
+                self.lasers.draw(DISPLAY) 
+        
+    def recharge(self):
+        if not self.ready:
+            current_time = pygame.time.get_ticks()
+            if current_time -self.attack_time >= self.cooldown:
+                self.ready = True
 
+    def attack(self):
+        if self.ready:
+            self.lasers.add(Enemy_laser(self.rect.centerx,self.rect.centery))
+            self.ready = False
+            self.attack_time = pygame.time.get_ticks()
+
+    def laser_collision(self):
+        for laser in self.lasers:
+            if pygame.sprite.spritecollide(game.player,self.lasers,True):
+                game.player.health-=1
+                self.lasers.remove(laser)
+
+    
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, angle, x, y):
         super().__init__()
+        self.x = x
+        self.y = y
         self.image = pygame.transform.scale(pygame.image.load(
             "assets/bullet.png").convert_alpha(), (16, 16))
-        self.rect = self.image.get_rect(center=(x, y))
+        self.rect = self.image.get_rect(center=(self.x, self.y))
         self.angle = angle
         self.speed = 15
 
@@ -230,6 +261,20 @@ class Target:
         self.rect.y = self.rect.center[1] - self.height/2
         DISPLAY.blit(self.image, (self.rect.x, self.rect.y))
 
+class Enemy_laser(pygame.sprite.Sprite):
+    def __init__(self,x,y):
+        super().__init__()
+        self.x = x
+        self.y = y
+        self.image = pygame.Surface((8,8))
+        self.image.fill((0,0,255))
+        self.rect = self.image.get_rect(center = (self.x,self.y))
+        self.speed = 5
+    
+    def move(self):
+        self.rect.centery += math.cos(0) * self.speed
+        self.rect.centerx += math.sin(0) * self.speed
+        
 class Game:
     def __init__(self):
         self.enemies = pygame.sprite.Group()
@@ -237,6 +282,7 @@ class Game:
         self.target = Target(0, 0, 30, 30)
         self.game_over = False
         self.collision_tolerance = 10
+        self.difficulty = 0
 
     def display_ui(self):
         for i in range(self.player.max_health):
@@ -254,7 +300,6 @@ class Game:
         return time
 
     def shoot(self):
-        print("shoot")
         self.player.shoot()
 
     def update_screen(self):
@@ -263,11 +308,11 @@ class Game:
 
     def enemy_spawner_1(self):
         while True:
-            for i in range(55):
+            for i in range(50):
                 yield
             randomx = random.randint(0, 1220)
             randomy = random.randint(20, 670)
-            enemy = Slime(randomx, randomy,2)
+            enemy = Slime(randomx, randomy,1)
             self.enemies.add(enemy)
             
     def enemy_spawner_2(self):
@@ -281,12 +326,13 @@ class Game:
 
     def enemy_spawner_3(self):
         while True:
-            for i in range(360):
+            for i in range(200):
                 yield
-            randomx = random.randint(0, 1220)
-            randomy = random.randint(20, 670)
-            enemy3 = Skelly2(randomx,randomy,3)
+            randomx = random.randint(10, 900)
+            randomy = random.randint(50,60)
+            enemy3 = Skelly2(randomx,randomy,0)
             self.enemies.add(enemy3)
+            
 
     def draw(self):
         self.target.update()
@@ -302,6 +348,7 @@ class Game:
         time_text = TEXT_FONT.render(f'Final Time: {database.time} Seconds', True, (255,255,255))
         DISPLAY.blit(time_text,(450,400))
         self.update_screen()
+        
 
     def check_game_over(self):
         if self.player.health <= 0:
@@ -331,6 +378,14 @@ class Game:
                     b.change()
                     self.player.bullets.draw(DISPLAY)
 
+    def collision_enemy(self):
+        for enemy in self.enemies:
+            if pygame.sprite.spritecollide(enemy,self.player.bullets,True):
+                enemy.health -= 1
+                if enemy.health <=0:
+                    database.score+=10
+                    self.enemies.remove(enemy)
+
 pygame.init()
 pygame.font.get_init()
 
@@ -347,7 +402,7 @@ game = Game()
 database = SQL("Data.db")
 database.get_last_id()
 
-game_active = False
+
 spawn1 = game.enemy_spawner_1()
 spawn2 = game.enemy_spawner_2()
 spawn3 = game.enemy_spawner_3()
@@ -360,10 +415,13 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
+            
         if game_active:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 game.player.shoot()
+
         else:
+            
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 game_active = True
                 start_time = int(pygame.time.get_ticks()//1000)
@@ -377,27 +435,22 @@ while True:
 
         if game.game_over:
             game.game_over_call()
-            continue
-        
+            import leaderboardtimes
+            continue 
         next(spawn1)
         next(spawn2)
         next(spawn3)
+        
 
         game.enemy_player_collision()
         game.check_game_over()
         game.enemy_player_collision()
         
-        for enemy in game.enemies:
-            if pygame.sprite.spritecollide(enemy,game.player.bullets,True):
-                enemy.health -= 1
-                if enemy.health <=0:
-                    database.score+=10
-                    game.enemies.remove(enemy)
-                            
+        game.collision_enemy()
         database.time = game.display_ui()
         
         database.add_to_database()
-    
+
     else:
         pygame.mouse.set_visible(True)
         DISPLAY.fill((94,129,162))
@@ -406,5 +459,6 @@ while True:
         DISPLAY.blit(TEXT_FONT.render("Normal skeleton = 2 health (2 hits to kill)",True,(255,255,255)),(10,150))
         DISPLAY.blit(TEXT_FONT.render("Purple skeleton = 3 health (3 hits to kill)",True,(255,255,255)),(10,200))
         DISPLAY.blit(TEXT_FONT.render("PRESS SPACE TO START",True,(255,255,255)),(10,500))
+        
     game.update_screen()
     

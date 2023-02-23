@@ -4,7 +4,6 @@ import math
 import random
 import sqlite3
 
-#make comments 
 game_active = False
 class SQL:
     def __init__(self,database):
@@ -33,7 +32,7 @@ class Player(pygame.sprite.Sprite):
         super().__init__()
         self.health = self.max_health = 3
         self.image = pygame.transform.scale(pygame.image.load(
-            "assets/test.png").convert_alpha(), (40, 40))
+            "assets/player sprite/tile000.png").convert_alpha(), (40, 40))
         self.rect = self.image.get_rect(
             center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2))
         self.speed = 5
@@ -189,7 +188,7 @@ class Skelly2(Enemy):
         self.rect = self.image.get_rect(center=(self.x, self.y))
         self.lasers = pygame.sprite.Group()
         self.ready = True
-        self.cooldown = 1500
+        self.cooldown = 1000
         self.attack_time = 0
     
     def update(self): #overriding 
@@ -224,7 +223,6 @@ class Skelly2(Enemy):
                 game.player.health-=1
                 self.lasers.remove(laser)
 
-    
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, angle, x, y):
         super().__init__()
@@ -239,10 +237,10 @@ class Bullet(pygame.sprite.Sprite):
     def change(self):
         self.rect.centery -= int(math.sin(self.angle) * self.speed)
         self.rect.centerx -= int(math.cos(self.angle) * self.speed)
-        if self.rect.y <= -50 or self.rect.y >= SCREEN_HEIGHT + 50:
+        if self.rect.y <= 30 or self.rect.y >= 680:
             self.speed = -15
 
-        if self.rect.x <= -50 or self.rect.x >= SCREEN_WIDTH + 50:
+        if self.rect.x <= 35 or self.rect.x >= 1220:
             self.speed = -15
 
 class Target:
@@ -283,6 +281,8 @@ class Game:
         self.game_over = False
         self.collision_tolerance = 10
         self.difficulty = 0
+        self.background = pygame.transform.scale(pygame.image.load(
+            'assets/map.png').convert(), (SCREEN_WIDTH, SCREEN_HEIGHT))
 
     def display_ui(self):
         for i in range(self.player.max_health):
@@ -306,25 +306,31 @@ class Game:
         CLOCK.tick(60)
         pygame.display.update()
 
-    def enemy_spawner_1(self):
+    def E_enemy_spawner_1(self):
         while True:
-            for i in range(50):
+            for i in range(80):
                 yield
             randomx = random.randint(0, 1220)
             randomy = random.randint(20, 670)
             enemy = Slime(randomx, randomy,1)
+            while abs(self.player.rect.centerx-enemy.x) < 250 and abs(self.player.rect.centery-enemy.y)<250:
+                enemy.x = random.randint(0,1220-90)
+                enemy.y = random.randint(20,670-90)
             self.enemies.add(enemy)
             
-    def enemy_spawner_2(self):
+    def E_enemy_spawner_2(self):
         while True:
-            for i in range(150):
+            for i in range(180):
                 yield
             randomx = random.randint(0, 1220)
             randomy = random.randint(20, 670)
-            enemy2 = Skelly1(randomx,randomy,2)
+            enemy2 = Skelly1(randomx,randomy,1)
+            while abs(self.player.rect.centerx-enemy2.x) < 250 and abs(self.player.rect.centery-enemy2.y)<250:
+                enemy2.x = random.randint(0,1220-90)
+                enemy2.y = random.randint(20,670-90)
             self.enemies.add(enemy2)
 
-    def enemy_spawner_3(self):
+    def E_enemy_spawner_3(self):
         while True:
             for i in range(200):
                 yield
@@ -332,7 +338,72 @@ class Game:
             randomy = random.randint(50,60)
             enemy3 = Skelly2(randomx,randomy,0)
             self.enemies.add(enemy3)
-            
+
+    def M_enemy_spawner_1(self):
+        while True:
+            for i in range(60):
+                yield
+            randomx = random.randint(0, 1220)
+            randomy = random.randint(20, 670)
+            enemy = Slime(randomx,randomy,1)
+            while abs(self.player.rect.centerx-enemy.x) < 250 and abs(self.player.rect.centery-enemy.y)<250:
+                enemy.x = random.randint(0,1220-90)
+                enemy.y = random.randint(20,670-90)
+            self.enemies.add(enemy)
+
+    def M_enemy_spawner_2(self):
+        while True:
+            for i in range(160):
+                yield
+            randomx = random.randint(0, 1220)
+            randomy = random.randint(20, 670)
+            enemy2 = Skelly1(randomx,randomy,2)
+            while abs(self.player.rect.centerx-enemy2.x) < 250 and abs(self.player.rect.centery-enemy2.y)<250:
+                enemy2.x = random.randint(0,1220-90)
+                enemy2.y = random.randint(20,670-90)
+            self.enemies.add(enemy2)
+
+    def M_enemy_spawner_3(self):
+        while True:
+            for i in range(120):
+                yield
+            randomx = random.randint(10, 900)
+            randomy = random.randint(50,60)
+            enemy3 = Skelly2(randomx,randomy,0)
+            self.enemies.add(enemy3)
+
+    def H_enemy_spawner_1(self):
+        while True:
+            for i in range(60):
+                yield
+            randomx = random.randint(0, 1220)
+            randomy = random.randint(20, 670)
+            enemy = Slime(randomx,randomy,2)
+            while abs(self.player.rect.centerx-enemy.x) < 250 and abs(self.player.rect.centery-enemy.y)<250:
+                enemy.x = random.randint(0,1220-90)
+                enemy.y = random.randint(20,670-90)
+            self.enemies.add(enemy)
+
+    def H_enemy_spawner_2(self):
+        while True:
+            for i in range(100):
+                yield
+            randomx = random.randint(0, 1220)
+            randomy = random.randint(20, 670)
+            enemy2 = Skelly1(randomx,randomy,2)
+            while abs(self.player.rect.centerx-enemy2.x) < 250 and abs(self.player.rect.centery-enemy2.y)<250:
+                enemy2.x = random.randint(0,1220-90)
+                enemy2.y = random.randint(20,670-90)
+            self.enemies.add(enemy2)
+
+    def H_enemy_spawner_3(self):
+        while True:
+            for i in range(200):
+                yield
+            randomx = random.randint(10, 900)
+            randomy = random.randint(50,60)
+            enemy3 = Skelly2(randomx,randomy,0)
+            self.enemies.add(enemy3)
 
     def draw(self):
         self.target.update()
@@ -346,7 +417,12 @@ class Game:
         DISPLAY.blit(score_text,(450,300))
 
         time_text = TEXT_FONT.render(f'Final Time: {database.time} Seconds', True, (255,255,255))
+        quit_text = TEXT_FONT.render("Press X button in top right corner of window to quit game",True,(255,255,255))
+        leaderboardtext = TEXT_FONT.render("Leaderboard and other info presented in terminal",True,(255,255,255))
+        DISPLAY.blit(leaderboardtext,(100,600))
         DISPLAY.blit(time_text,(450,400))
+        DISPLAY.blit(quit_text,(50,500))
+
         self.update_screen()
         
 
@@ -393,22 +469,25 @@ TEXT_FONT = pygame.font.Font("assets/font.otf", 32)
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
 WINDOWSIZE = (SCREEN_WIDTH, SCREEN_HEIGHT)
-
 DISPLAY = pygame.display.set_mode(WINDOWSIZE)
 CLOCK = pygame.time.Clock()
-pygame.display.set_caption("Grave Fighter")
+
+pygame.display.set_caption("Desert Dungeons")
 
 game = Game()
 database = SQL("Data.db")
 database.get_last_id()
 
 
-spawn1 = game.enemy_spawner_1()
-spawn2 = game.enemy_spawner_2()
-spawn3 = game.enemy_spawner_3()
-
-BACKGROUND = pygame.transform.scale(pygame.image.load(
-            'assets/map.png').convert(), (SCREEN_WIDTH, SCREEN_HEIGHT))
+Espawn1 = game.E_enemy_spawner_1()
+Espawn2 = game.E_enemy_spawner_2()
+Espawn3 = game.E_enemy_spawner_3()
+Mspawn1 = game.M_enemy_spawner_1()
+Mspawn2 = game.M_enemy_spawner_2()
+Mspawn3 = game.M_enemy_spawner_3()
+Hspawn1 = game.H_enemy_spawner_1()
+Hspawn2 = game.H_enemy_spawner_2()
+Hspawn3 = game.H_enemy_spawner_3()
 
 while True:
     for event in pygame.event.get():
@@ -421,56 +500,93 @@ while True:
                 game.player.shoot()
 
         else:
-            
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_1:
+                game.difficulty = 1
+                game.player.health = 5
+                game.player.max_health =5
+                game_active = True
+                start_time = int(pygame.time.get_ticks()//1000)
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_2:
+                game.difficulty = 2
+                game.player.health = 3
+                game.player.max_health = 3
+                game_active = True
+                start_time = int(pygame.time.get_ticks()//1000)
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_3:
+                game.difficulty = 3
+                game.player.health = 2
+                game.player.max_health = 2
                 game_active = True
                 start_time = int(pygame.time.get_ticks()//1000)
 
-        '''if game_active == True and game.game_over == True:
-            
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                
-                game_active = False
-                game.game_over = False'''
-            
-                
-        
-        
-
-    
-    if game_active:
+    if game_active and game.difficulty ==1:
         pygame.mouse.set_visible(False)
         DISPLAY.fill((0, 0, 0))
-        DISPLAY.blit(BACKGROUND,(0,0))
+        DISPLAY.blit(game.background,(0,0))
         game.draw()
         game.draw_bullets()
-
+        next(Espawn1)
+        next(Espawn2)
+        next(Espawn3)
         if game.game_over:
             game.game_over_call()
             import leaderboardtimes
             continue 
-        next(spawn1)
-        next(spawn2)
-        next(spawn3)
-        
-
         game.enemy_player_collision()
         game.check_game_over()
         game.enemy_player_collision()
-        
         game.collision_enemy()
         database.time = game.display_ui()
-        
         database.add_to_database()
-
+        
+    elif game_active and game.difficulty == 2:
+        pygame.mouse.set_visible(False)
+        DISPLAY.fill((0, 0, 0))
+        DISPLAY.blit(game.background,(0,0))
+        game.draw()
+        game.draw_bullets()
+        next(Mspawn1)
+        next(Mspawn2)
+        next(Mspawn3)
+        if game.game_over:
+            game.game_over_call()
+            import leaderboardtimes
+            continue 
+        game.enemy_player_collision()
+        game.check_game_over()
+        game.enemy_player_collision()
+        game.collision_enemy()
+        database.time = game.display_ui()
+        database.add_to_database()
+        
+    elif game_active and game.difficulty == 3:
+        pygame.mouse.set_visible(False)
+        DISPLAY.fill((0, 0, 0))
+        DISPLAY.blit(game.background,(0,0))
+        game.draw()
+        game.draw_bullets()
+        next(Hspawn1)
+        next(Hspawn2)
+        next(Hspawn3)
+        if game.game_over:
+            game.game_over_call()
+            import leaderboardtimes
+            continue 
+        game.enemy_player_collision()
+        game.check_game_over()
+        game.enemy_player_collision()
+        game.collision_enemy()
+        database.time = game.display_ui()
+        database.add_to_database()
+        
     else:
         pygame.mouse.set_visible(True)
-        DISPLAY.fill((94,129,162))
-        DISPLAY.blit(TEXT_FONT.render("WASD to move, mouse to aim, left click to shoot",True,(255,255,255)),(10,10))
+        DISPLAY.fill((239,152,52))
+        DISPLAY.blit(TEXT_FONT.render("DESERT DUNGEONS",True,(0,0,0)),(500,10))
+        DISPLAY.blit(TEXT_FONT.render("WASD to move, mouse to aim, left click to shoot",True,(255,255,255)),(10,50))
         DISPLAY.blit(TEXT_FONT.render("Slime = 1 Health (1 hit to kill)",True,(255,255,255)),(10,100))
         DISPLAY.blit(TEXT_FONT.render("Normal skeleton = 2 health (2 hits to kill)",True,(255,255,255)),(10,150))
         DISPLAY.blit(TEXT_FONT.render("Purple skeleton = 3 health (3 hits to kill)",True,(255,255,255)),(10,200))
-        DISPLAY.blit(TEXT_FONT.render("PRESS SPACE TO START",True,(255,255,255)),(10,500))
-        
+        DISPLAY.blit(TEXT_FONT.render("CHOOSE DIFFICULTY: 1(EASY), 2(MEDIUM), 3(HARD)",True,(0,0,0)),(10,500))
     game.update_screen()
     
