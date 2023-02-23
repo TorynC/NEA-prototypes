@@ -270,13 +270,10 @@ class Enemy_laser(pygame.sprite.Sprite):
         self.image.fill((0,0,255))
         self.rect = self.image.get_rect(center = (self.x,self.y))
         self.speed = 5
-        self.current_player = game.player.rect.center
-        self.angle = math.atan2(
-            (self.current_player[1]-self.rect.centery), (self.current_player[0]-self.rect.centerx))
     
     def move(self):
-        self.rect.centery -= math.cos(self.angle) * self.speed
-        self.rect.centerx -= math.sin(self.angle) * self.speed
+        self.rect.centery += math.cos(0) * self.speed
+        self.rect.centerx += math.sin(0) * self.speed
         
 class Game:
     def __init__(self):
@@ -285,6 +282,7 @@ class Game:
         self.target = Target(0, 0, 30, 30)
         self.game_over = False
         self.collision_tolerance = 10
+        self.difficulty = 0
 
     def display_ui(self):
         for i in range(self.player.max_health):
@@ -328,10 +326,10 @@ class Game:
 
     def enemy_spawner_3(self):
         while True:
-            for i in range(60):
+            for i in range(100):
                 yield
-            randomx = random.randint(300, 900)
-            randomy = random.randint(100, 500)
+            randomx = random.randint(10, 900)
+            randomy = random.randint(50,60)
             enemy3 = Skelly2(randomx,randomy,0)
             self.enemies.add(enemy3)
             
@@ -422,9 +420,11 @@ while True:
                 game.player.shoot()
 
         else:
+            
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 game_active = True
                 start_time = int(pygame.time.get_ticks()//1000)
+
     
     if game_active:
         pygame.mouse.set_visible(False)
@@ -451,7 +451,7 @@ while True:
         database.time = game.display_ui()
         
         database.add_to_database()
-    
+
     else:
         pygame.mouse.set_visible(True)
         DISPLAY.fill((94,129,162))
@@ -460,5 +460,6 @@ while True:
         DISPLAY.blit(TEXT_FONT.render("Normal skeleton = 2 health (2 hits to kill)",True,(255,255,255)),(10,150))
         DISPLAY.blit(TEXT_FONT.render("Purple skeleton = 3 health (3 hits to kill)",True,(255,255,255)),(10,200))
         DISPLAY.blit(TEXT_FONT.render("PRESS SPACE TO START",True,(255,255,255)),(10,500))
+        
     game.update_screen()
     
