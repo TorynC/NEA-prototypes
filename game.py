@@ -5,7 +5,7 @@ import random
 import sqlite3
 
 #make comments 
-
+game_active = False
 class SQL:
     def __init__(self,database):
         self.database = database
@@ -326,7 +326,7 @@ class Game:
 
     def enemy_spawner_3(self):
         while True:
-            for i in range(100):
+            for i in range(200):
                 yield
             randomx = random.randint(10, 900)
             randomy = random.randint(50,60)
@@ -348,6 +348,7 @@ class Game:
         time_text = TEXT_FONT.render(f'Final Time: {database.time} Seconds', True, (255,255,255))
         DISPLAY.blit(time_text,(450,400))
         self.update_screen()
+        
 
     def check_game_over(self):
         if self.player.health <= 0:
@@ -401,7 +402,7 @@ game = Game()
 database = SQL("Data.db")
 database.get_last_id()
 
-game_active = False
+
 spawn1 = game.enemy_spawner_1()
 spawn2 = game.enemy_spawner_2()
 spawn3 = game.enemy_spawner_3()
@@ -425,6 +426,17 @@ while True:
                 game_active = True
                 start_time = int(pygame.time.get_ticks()//1000)
 
+        '''if game_active == True and game.game_over == True:
+            
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                
+                game_active = False
+                game.game_over = False'''
+            
+                
+        
+        
+
     
     if game_active:
         pygame.mouse.set_visible(False)
@@ -436,8 +448,7 @@ while True:
         if game.game_over:
             game.game_over_call()
             import leaderboardtimes
-            continue
-        
+            continue 
         next(spawn1)
         next(spawn2)
         next(spawn3)
