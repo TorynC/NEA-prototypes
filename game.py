@@ -124,6 +124,13 @@ class Player(pygame.sprite.Sprite): #player class inherits from sprite class fro
         self.bullets.add(Bullet(angle, self.rect.centerx, self.rect.centery))
         #bullet sprite group 
         #bullet object instantiated inside player class (composition) and added to bullet sprite group 
+    
+    def bullet_delete(self):
+        for bullet in self.bullets:
+            if bullet.rect.centerx >= SCREEN_WIDTH or bullet.rect.centerx <= 0:
+                bullet.kill()
+            elif bullet.rect.centery >= SCREEN_HEIGHT or bullet.rect.centery <= 0:
+                bullet.kill()
 
     def update(self):
         #calls important methods 
@@ -211,6 +218,7 @@ class Skeleton2(Enemy): #skeleton2 class inherits from enemy class and sprite cl
         self.attack()
         self.recharge()
         self.laser_collision()
+        self.laser_delete()
         for laser in self.lasers:
                 laser.move()
                 self.lasers.draw(DISPLAY) 
@@ -227,11 +235,19 @@ class Skeleton2(Enemy): #skeleton2 class inherits from enemy class and sprite cl
             self.ready = False
             self.attack_time = pygame.time.get_ticks()
 
-    def laser_collision(self):
+
+    def laser_collision(self):#method to detect collision between enemy laser and player 
         for laser in self.lasers:
             if pygame.sprite.spritecollide(game.player,self.lasers,True):
                 game.player.health-=1
                 self.lasers.remove(laser)
+    
+    def laser_delete(self):
+        for laser in self.lasers:
+            if laser.rect.centerx > SCREEN_WIDTH or laser.rect.centerx <=0:
+                laser.kill()
+            elif laser.rect.centery > SCREEN_HEIGHT or laser.rect.centery <=0:
+                laser.kill()
 
 class Bullet(pygame.sprite.Sprite): #bullet class inherits from sprite class
     def __init__(self, angle, x, y):
@@ -325,9 +341,9 @@ class Game: #game class
             randomx = random.randint(0, 1220)
             randomy = random.randint(20, 670)
             enemy = Slime(randomx, randomy,1) #composition of slime class
-            while abs(self.player.rect.centerx-enemy.x) < 500 and abs(self.player.rect.centery-enemy.y)<500: #make sure that enemy doesn't spawn directly on player 
-                enemy.x = random.randint(0,1220-90)
-                enemy.y = random.randint(20,670-90)
+            while abs(self.player.rect.centerx-enemy.x) < 250 and abs(self.player.rect.centery-enemy.y)<250: #make sure that enemy doesn't spawn directly on player 
+                enemy.x = random.randint(0-90,1220-90)
+                enemy.y = random.randint(20-90,670-90)
             self.enemies.add(enemy)
             
     def E_enemy_spawner_2(self): #enemy spawner for skeleton1 when easy mode is selected 
@@ -337,16 +353,16 @@ class Game: #game class
             randomx = random.randint(0, 1220)
             randomy = random.randint(20, 670)
             enemy2 = Skeleton1(randomx,randomy,1) #composition of skeleton1
-            while abs(self.player.rect.centerx-enemy2.x) < 500 and abs(self.player.rect.centery-enemy2.y)<500:
-                enemy2.x = random.randint(0,1220-90)
-                enemy2.y = random.randint(20,670-90)
+            while abs(self.player.rect.centerx-enemy2.x) < 250 and abs(self.player.rect.centery-enemy2.y)<250:
+                enemy2.x = random.randint(0-90,1220-90)
+                enemy2.y = random.randint(20-90,670-90)
             self.enemies.add(enemy2)
 
     def E_enemy_spawner_3(self): #spawner for skeleton2 when easy mode is selected 
         while True:
             for i in range(200):
                 yield
-            randomx = random.randint(10, 900)
+            randomx = random.randint(10, 1100)
             randomy = random.randint(50,60)
             enemy3 = Skeleton2(randomx,randomy,0) #composition of skeleton2
             self.enemies.add(enemy3)
@@ -379,7 +395,7 @@ class Game: #game class
         while True:
             for i in range(120):
                 yield
-            randomx = random.randint(10, 900)
+            randomx = random.randint(10, 1100)
             randomy = random.randint(50,60)
             enemy3 = Skeleton2(randomx,randomy,0) #composition of skeleton2
             self.enemies.add(enemy3)
@@ -412,7 +428,7 @@ class Game: #game class
         while True:
             for i in range(200):
                 yield
-            randomx = random.randint(10, 900)
+            randomx = random.randint(10, 1100)
             randomy = random.randint(50,60)
             enemy3 = Skeleton2(randomx,randomy,0) #skeleton2 composition
             self.enemies.add(enemy3)
@@ -546,6 +562,7 @@ while True:
         DISPLAY.blit(game.background,(0,0))
         game.draw()
         game.draw_bullets()
+        game.player.bullet_delete()
         next(Espawn1)
         next(Espawn2)
         next(Espawn3)
