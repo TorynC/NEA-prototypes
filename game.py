@@ -569,7 +569,7 @@ while True:
         if game.game_over:
             game.game_over_call()
             import leaderboardtimes
-            continue 
+            continue
         game.enemy_player_collision()
         game.check_game_over()
         game.enemy_player_collision()
