@@ -325,7 +325,7 @@ class Game: #game class
             randomx = random.randint(0, 1220)
             randomy = random.randint(20, 670)
             enemy = Slime(randomx, randomy,1) #composition of slime class
-            while abs(self.player.rect.centerx-enemy.x) < 250 and abs(self.player.rect.centery-enemy.y)<250: #make sure that enemy doesn't spawn directly on player 
+            while abs(self.player.rect.centerx-enemy.x) < 500 and abs(self.player.rect.centery-enemy.y)<500: #make sure that enemy doesn't spawn directly on player 
                 enemy.x = random.randint(0,1220-90)
                 enemy.y = random.randint(20,670-90)
             self.enemies.add(enemy)
@@ -337,7 +337,7 @@ class Game: #game class
             randomx = random.randint(0, 1220)
             randomy = random.randint(20, 670)
             enemy2 = Skeleton1(randomx,randomy,1) #composition of skeleton1
-            while abs(self.player.rect.centerx-enemy2.x) < 250 and abs(self.player.rect.centery-enemy2.y)<250:
+            while abs(self.player.rect.centerx-enemy2.x) < 500 and abs(self.player.rect.centery-enemy2.y)<500:
                 enemy2.x = random.randint(0,1220-90)
                 enemy2.y = random.randint(20,670-90)
             self.enemies.add(enemy2)
@@ -358,7 +358,7 @@ class Game: #game class
             randomx = random.randint(0, 1220)
             randomy = random.randint(20, 670)
             enemy = Slime(randomx,randomy,1) #composition of slime 
-            while abs(self.player.rect.centerx-enemy.x) < 250 and abs(self.player.rect.centery-enemy.y)<250:
+            while abs(self.player.rect.centerx-enemy.x) < 500 and abs(self.player.rect.centery-enemy.y)<500:
                 enemy.x = random.randint(0,1220-90)
                 enemy.y = random.randint(20,670-90)
             self.enemies.add(enemy)
@@ -370,7 +370,7 @@ class Game: #game class
             randomx = random.randint(0, 1220)
             randomy = random.randint(20, 670)
             enemy2 = Skeleton1(randomx,randomy,2) #composition of skeleton1
-            while abs(self.player.rect.centerx-enemy2.x) < 250 and abs(self.player.rect.centery-enemy2.y)<250:
+            while abs(self.player.rect.centerx-enemy2.x) < 500 and abs(self.player.rect.centery-enemy2.y)<500:
                 enemy2.x = random.randint(0,1220-90)
                 enemy2.y = random.randint(20,670-90)
             self.enemies.add(enemy2)
@@ -391,7 +391,7 @@ class Game: #game class
             randomx = random.randint(0, 1220)
             randomy = random.randint(20, 670)
             enemy = Slime(randomx,randomy,2) #composition of slime 
-            while abs(self.player.rect.centerx-enemy.x) < 250 and abs(self.player.rect.centery-enemy.y)<250:
+            while abs(self.player.rect.centerx-enemy.x) < 500 and abs(self.player.rect.centery-enemy.y)<500:
                 enemy.x = random.randint(0,1220-90)
                 enemy.y = random.randint(20,670-90)
             self.enemies.add(enemy)
@@ -403,7 +403,7 @@ class Game: #game class
             randomx = random.randint(0, 1220)
             randomy = random.randint(20, 670)
             enemy2 = Skeleton1(randomx,randomy,2) #composition of skeleton1
-            while abs(self.player.rect.centerx-enemy2.x) < 250 and abs(self.player.rect.centery-enemy2.y)<250:
+            while abs(self.player.rect.centerx-enemy2.x) < 500 and abs(self.player.rect.centery-enemy2.y)<500:
                 enemy2.x = random.randint(0,1220-90)
                 enemy2.y = random.randint(20,670-90)
             self.enemies.add(enemy2)
