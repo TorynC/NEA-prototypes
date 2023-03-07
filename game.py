@@ -577,7 +577,7 @@ while True:
         database.time = game.display_ui()
         database.add_to_database()
         
-    #game loop when medium mode is selected 
+    #game loop when medium mode is selected dd
     elif game_active and game.difficulty == 2:
         pygame.mouse.set_visible(False)
         DISPLAY.fill((0, 0, 0))
